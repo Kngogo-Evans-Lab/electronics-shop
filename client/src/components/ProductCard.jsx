@@ -20,15 +20,14 @@ function ProductCard({ product, onAddToCart, onViewDetails, contactPhone, whatsa
         tabIndex={0}
       >
         <img
-          src={product.imageUrl || "/uploads/placeholder.png"}
-          alt={product.name}
-          loading="eager"
-          fetchPriority="high"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "/uploads/placeholder.png";
-          }}
-        />
+  src={product.imageUrl || "/placeholder.png"}
+  alt={product.name}
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src = "/placeholder.png";
+  }}
+/>
+
       </div>
 
       <div className="product-info">

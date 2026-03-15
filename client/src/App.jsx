@@ -4,10 +4,14 @@ import Cart from "./components/Cart";
 import ProductDetail from "./components/ProductDetail";
 import "./App.css";
 
-// ✅ Fixed API URL for Render deployment
+// Use deployed backend URL from environment, fallback to localhost for dev
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "https://electronics-shop-api-id3m.onrender.com/api/products";
+  "http://localhost:5000/api/products";
+
+// Cloudinary placeholder
+const PLACEHOLDER_IMAGE =
+  "https://res.cloudinary.com/dr2u0jpvn/image/upload/v1773492892/placeholder_a1dh9w.jpg";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -36,10 +40,19 @@ function App() {
   const fetchProducts = async () => {
     try {
       const res = await fetch(API_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setProducts(data);
+
+      // Replace missing images with Cloudinary placeholder
+      const updated = data.map((p) => ({
+        ...p,
+        imageUrl: p.imageUrl || PLACEHOLDER_IMAGE,
+      }));
+
+      setProducts(updated);
     } catch (err) {
       console.error("Fetch products error:", err);
+      setProducts([]); // fallback to empty
     } finally {
       setLoading(false);
     }
@@ -59,26 +72,35 @@ function App() {
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case "price-low": return a.price - b.price;
-        case "price-high": return b.price - a.price;
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
         case "name":
-        default: return a.name.localeCompare(b.name);
+        default:
+          return a.name.localeCompare(b.name);
       }
     });
 
   const addToCart = (product, quantity = 1) => {
     const existingItem = cart.find((item) => item._id === product._id);
     if (existingItem) {
-      setCart(cart.map((item) => item._id === product._id ? { ...item, quantity: item.quantity + quantity } : item));
+      setCart(
+        cart.map((item) =>
+          item._id === product._id ? { ...item, quantity: item.quantity + quantity } : item
+        )
+      );
     } else {
       setCart([...cart, { ...product, quantity }]);
     }
   };
 
-  const removeFromCart = (productId) => setCart(cart.filter((item) => item._id !== productId));
+  const removeFromCart = (productId) =>
+    setCart(cart.filter((item) => item._id !== productId));
   const updateQuantity = (productId, quantity) => {
     if (quantity <= 0) removeFromCart(productId);
-    else setCart(cart.map((item) => item._id === productId ? { ...item, quantity } : item));
+    else
+      setCart(cart.map((item) => (item._id === productId ? { ...item, quantity } : item)));
   };
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -103,41 +125,55 @@ function App() {
               placeholder="Search products..."
               className="search-input"
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); if (e.target.value) setShowFilterSidebar(true); }}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value) setShowFilterSidebar(true);
+              }}
             />
             {searchTerm && (
-              <button className="clear-search" onClick={() => {
-                setSearchTerm("");
-                setShowFilterSidebar(false);
-                setFilterCategory("All");
-                setFilterBrand("All");
-                setFilterPriceMin(0);
-                setFilterPriceMax(10000000);
-                setFilterInStock(false);
-              }}>
+              <button
+                className="clear-search"
+                onClick={() => {
+                  setSearchTerm("");
+                  setShowFilterSidebar(false);
+                  setFilterCategory("All");
+                  setFilterBrand("All");
+                  setFilterPriceMin(0);
+                  setFilterPriceMax(10000000);
+                  setFilterInStock(false);
+                }}
+              >
                 ✕ Clear
               </button>
             )}
           </div>
 
           <div className="hero-actions">
-            <button className="cart-btn" onClick={() => setShowCart(!showCart)}>🛒 Cart ({cartCount})</button>
+            <button className="cart-btn" onClick={() => setShowCart(!showCart)}>
+              🛒 Cart ({cartCount})
+            </button>
           </div>
         </div>
       </div>
 
       {showCart ? (
-        <Cart cart={cart} onRemove={removeFromCart} onUpdateQuantity={updateQuantity} onClose={() => setShowCart(false)} />
+        <Cart
+          cart={cart}
+          onRemove={removeFromCart}
+          onUpdateQuantity={updateQuantity}
+          onClose={() => setShowCart(false)}
+        />
       ) : selectedProduct ? (
-        <ProductDetail product={selectedProduct} allProducts={products} onAddToCart={(p, qty) => addToCart(p, qty)} onClose={() => setSelectedProduct(null)} />
+        <ProductDetail
+          product={selectedProduct}
+          allProducts={products}
+          onAddToCart={(p, qty) => addToCart(p, qty)}
+          onClose={() => setSelectedProduct(null)}
+        />
       ) : (
         <main className="main-content">
           <div className="products-section">
-            {showFilterSidebar && searchTerm && (
-              <aside className="filter-sidebar">
-                {/* Filters UI stays the same */}
-              </aside>
-            )}
+            {showFilterSidebar && searchTerm && <aside className="filter-sidebar">{/* Filters */}</aside>}
 
             <div className={`products-content ${showFilterSidebar && searchTerm ? "with-sidebar" : ""}`}>
               {loading ? (
@@ -162,7 +198,7 @@ function App() {
       )}
 
       <footer className="footer">
-        <p>&copy;sketch tech electronics. All rights reserved.</p>
+        <p>&copy;Faith Electronics. All rights reserved.</p>
       </footer>
     </div>
   );
