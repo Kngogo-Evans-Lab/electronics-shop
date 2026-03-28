@@ -1,105 +1,46 @@
+/* ═══════════════════════════════════
+   FAITH ELECTRONICS — index.css
+   Global Reset & Base
+═══════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light;
-  color: #333;
-  background-color: #ffffff;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --fe-red:       #e02020;
+  --fe-red-dark:  #b71c1c;
+  --fe-orange:    #ff6d00;
+  --fe-navy:      #0d1b2a;
+  --fe-navy2:     #1b2e44;
+  --fe-blue:      #1565c0;
+  --fe-blue-lt:   #1976d2;
+  --fe-green:     #2e7d32;
+  --fe-bg:        #f0f2f5;
+  --fe-surface:   #ffffff;
+  --fe-border:    #dde1e7;
+  --fe-t1:        #0d1b2a;
+  --fe-t2:        #3d4f63;
+  --fe-t3:        #7a8a9a;
+  --fe-radius:    6px;
+  --fe-shadow:    0 2px 8px rgba(0,0,0,.10);
+  --fe-shadow-lg: 0 6px 24px rgba(0,0,0,.13);
+  --fe-trans:     .18s ease;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+html, body, #root { height: 100%; }
 
 body {
-  margin: 0;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  background: var(--fe-bg);
+  color: var(--fe-t1);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
   min-width: 320px;
-  min-height: 100vh;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-}
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+img { display: block; max-width: 100%; }
 
-p {
-  margin: 0;
-}
-
-a {
-  font-weight: 500;
-  color: #667eea;
-  text-decoration: none;
-}
-
-a:hover {
-  color: #764ba2;
-}
-
-button {
-  border-radius: 6px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #667eea;
-  color: white;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-
-button:hover {
-  background-color: #764ba2;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
-}
-
-input,
-select {
-  font-family: inherit;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #667eea;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #764ba2;
-}
-
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f0f0; }
+::-webkit-scrollbar-thumb { background: #c0c8d4; border-radius: 3px; }

@@ -10,7 +10,8 @@ function ProductList({
 }) {
   return (
     <div className="products-grid">
-      {products.map((product) => (
+      {Array.isArray(products) ? products.map((product) => (
+
         <ProductCard
           key={product._id}
           product={product}
