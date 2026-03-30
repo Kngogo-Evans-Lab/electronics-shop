@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "cd client && npm install && npm run build"
+    "build": "npm run build"
   },
   "dependencies": {
     "react-router-dom": "^7.13.2"
