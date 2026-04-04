@@ -7,7 +7,7 @@ const API = 'https://electronics-shop-api-id3m.onrender.com'
 function PasswordStrength({ password }) {
   if (!password) return null
   const checks = [
-    { label: 'At least 8 characters', pass: password.length >= 8 },
+    { label: 'At least 6 characters', pass: password.length >= 6 },
     { label: 'Contains uppercase', pass: /[A-Z]/.test(password) },
     { label: 'Contains number', pass: /[0-9]/.test(password) },
     { label: 'Contains special char', pass: /[^A-Za-z0-9]/.test(password) },
@@ -27,7 +27,7 @@ function PasswordStrength({ password }) {
       <div className="grid grid-cols-2 gap-1">
         {checks.map(c => (
           <div key={c.label} className={`text-xs flex items-center gap-1 ${c.pass ? 'text-green-600' : 'text-gray-400'}`}>
-            <span>{c.pass ? 'v' : 'o'}</span> {c.label}
+            <span>{c.pass ? '✓' : '○'}</span> {c.label}
           </div>
         ))}
       </div>
@@ -50,6 +50,40 @@ function AppleIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
       <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+    </svg>
+  )
+}
+
+// ✅ InputField is defined OUTSIDE AuthPage so it never gets recreated on re-render
+// This prevents the focus-loss-on-keystroke bug
+function InputField({ label, type, value, onChange, error, placeholder, required, children }) {
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+      <div className="relative">
+        <input
+          type={type || 'text'}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+            error ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+          }`}
+        />
+        {children}
+      </div>
+      {error && <p className="text-xs text-red-500 mt-1">⚠ {error}</p>}
+    </div>
+  )
+}
+
+function Spinner() {
+  return (
+    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
   )
 }
@@ -157,38 +191,18 @@ export default function AuthPage() {
     setLoading(false)
   }
 
-  const Spinner = () => (
-    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
-  )
-
-  const InputField = ({ label, type = 'text', value, onChange, error, placeholder, required, children }) => (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      <div className="relative">
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-            error ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-gray-300'
-          }`}
-        />
-        {children}
-      </div>
-      {error && <p className="text-xs text-red-500 mt-1">&#9888; {error}</p>}
-    </div>
-  )
+  const switchMode = newMode => {
+    setMode(newMode)
+    setErrors({})
+    setShowPassword(false)
+    setShowConfirm(false)
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
 
+        {/* Logo */}
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-sm">TS</div>
@@ -201,11 +215,13 @@ export default function AuthPage() {
 
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
 
+          {/* Mode tabs */}
           <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
             {[['login', 'Sign In'], ['register', 'Create Account']].map(([tab, label]) => (
               <button
                 key={tab}
-                onClick={() => { setMode(tab); setErrors({}) }}
+                type="button"
+                onClick={() => switchMode(tab)}
                 className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
                   mode === tab ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
                 }`}
@@ -215,13 +231,15 @@ export default function AuthPage() {
             ))}
           </div>
 
+          {/* General error */}
           {errors.general && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-5 flex items-start gap-2">
-              <span className="shrink-0 mt-0.5">&#9888;</span>
+              <span className="shrink-0 mt-0.5">⚠</span>
               <span>{errors.general}</span>
             </div>
           )}
 
+          {/* LOGIN */}
           {mode === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4" noValidate>
               <InputField
@@ -233,6 +251,7 @@ export default function AuthPage() {
                 placeholder="you@example.com"
                 required
               />
+
               <InputField
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
@@ -242,94 +261,189 @@ export default function AuthPage() {
                 placeholder="Enter your password"
                 required
               >
-                <button type="button" onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400 hover:text-gray-700"
+                >
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
               </InputField>
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={loginForm.remember} onChange={updateLogin('remember')} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
+                  <input
+                    type="checkbox"
+                    checked={loginForm.remember}
+                    onChange={updateLogin('remember')}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                  />
                   <span className="text-sm text-gray-600">Remember me</span>
                 </label>
-                <button type="button" className="text-sm text-blue-600 hover:underline font-semibold">Forgot password?</button>
+                <button type="button" className="text-sm text-blue-600 hover:underline font-semibold">
+                  Forgot password?
+                </button>
               </div>
 
-              <button type="submit" disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-colors text-base">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-colors text-base"
+              >
                 {loading && <Spinner />}
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
 
               <p className="text-center text-sm text-gray-500">
                 Don't have an account?{' '}
-                <button type="button" onClick={() => { setMode('register'); setErrors({}) }} className="text-blue-600 font-bold hover:underline">Create one</button>
+                <button type="button" onClick={() => switchMode('register')} className="text-blue-600 font-bold hover:underline">
+                  Create one
+                </button>
               </p>
             </form>
           )}
 
+          {/* REGISTER */}
           {mode === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4" noValidate>
               <div className="grid grid-cols-2 gap-3">
-                <InputField label="First Name" value={registerForm.firstName} onChange={updateRegister('firstName')} error={errors.firstName} placeholder="John" required />
-                <InputField label="Last Name" value={registerForm.lastName} onChange={updateRegister('lastName')} error={errors.lastName} placeholder="Doe" required />
+                <InputField
+                  label="First Name"
+                  value={registerForm.firstName}
+                  onChange={updateRegister('firstName')}
+                  error={errors.firstName}
+                  placeholder="John"
+                  required
+                />
+                <InputField
+                  label="Last Name"
+                  value={registerForm.lastName}
+                  onChange={updateRegister('lastName')}
+                  error={errors.lastName}
+                  placeholder="Doe"
+                  required
+                />
               </div>
-              <InputField label="Email Address" type="email" value={registerForm.email} onChange={updateRegister('email')} error={errors.email} placeholder="you@example.com" required />
-              <InputField label="Phone Number" type="tel" value={registerForm.phone} onChange={updateRegister('phone')} error={errors.phone} placeholder="+254 700 000 000" required />
+
+              <InputField
+                label="Email Address"
+                type="email"
+                value={registerForm.email}
+                onChange={updateRegister('email')}
+                error={errors.email}
+                placeholder="you@example.com"
+                required
+              />
+
+              <InputField
+                label="Phone Number"
+                type="tel"
+                value={registerForm.phone}
+                onChange={updateRegister('phone')}
+                error={errors.phone}
+                placeholder="+254 700 000 000"
+                required
+              />
+
               <div>
-                <InputField label="Password" type={showPassword ? 'text' : 'password'} value={registerForm.password} onChange={updateRegister('password')} error={errors.password} placeholder="Min 6 characters" required>
-                  <button type="button" onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-semibold">
+                <InputField
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={registerForm.password}
+                  onChange={updateRegister('password')}
+                  error={errors.password}
+                  placeholder="Min 6 characters"
+                  required
+                >
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400 hover:text-gray-700"
+                  >
                     {showPassword ? 'Hide' : 'Show'}
                   </button>
                 </InputField>
                 <PasswordStrength password={registerForm.password} />
               </div>
-              <InputField label="Confirm Password" type={showConfirm ? 'text' : 'password'} value={registerForm.confirmPassword} onChange={updateRegister('confirmPassword')} error={errors.confirmPassword} placeholder="Repeat your password" required>
-                <button type="button" onClick={() => setShowConfirm(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-semibold">
+
+              <InputField
+                label="Confirm Password"
+                type={showConfirm ? 'text' : 'password'}
+                value={registerForm.confirmPassword}
+                onChange={updateRegister('confirmPassword')}
+                error={errors.confirmPassword}
+                placeholder="Repeat your password"
+                required
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400 hover:text-gray-700"
+                >
                   {showConfirm ? 'Hide' : 'Show'}
                 </button>
               </InputField>
 
               <div>
                 <label className="flex items-start gap-2 cursor-pointer">
-                  <input type="checkbox" checked={registerForm.agreeTerms} onChange={updateRegister('agreeTerms')} className="w-4 h-4 text-blue-600 rounded border-gray-300 mt-0.5 shrink-0" />
+                  <input
+                    type="checkbox"
+                    checked={registerForm.agreeTerms}
+                    onChange={updateRegister('agreeTerms')}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 mt-0.5 shrink-0"
+                  />
                   <span className="text-sm text-gray-600">
-                    I agree to the <button type="button" className="text-blue-600 hover:underline font-semibold">Terms of Service</button> and <button type="button" className="text-blue-600 hover:underline font-semibold">Privacy Policy</button>
+                    I agree to the{' '}
+                    <button type="button" className="text-blue-600 hover:underline font-semibold">Terms of Service</button>
+                    {' '}and{' '}
+                    <button type="button" className="text-blue-600 hover:underline font-semibold">Privacy Policy</button>
                   </span>
                 </label>
-                {errors.agreeTerms && <p className="text-xs text-red-500 mt-1">&#9888; {errors.agreeTerms}</p>}
+                {errors.agreeTerms && <p className="text-xs text-red-500 mt-1">⚠ {errors.agreeTerms}</p>}
               </div>
 
-              <button type="submit" disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-colors text-base">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-colors text-base"
+              >
                 {loading && <Spinner />}
                 {loading ? 'Creating account...' : 'Create Account'}
               </button>
 
               <p className="text-center text-sm text-gray-500">
                 Already have an account?{' '}
-                <button type="button" onClick={() => { setMode('login'); setErrors({}) }} className="text-blue-600 font-bold hover:underline">Sign in</button>
+                <button type="button" onClick={() => switchMode('login')} className="text-blue-600 font-bold hover:underline">
+                  Sign in
+                </button>
               </p>
             </form>
           )}
 
+          {/* Divider */}
           <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-            <div className="relative flex justify-center"><span className="bg-white px-3 text-xs text-gray-400">or continue with</span></div>
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white px-3 text-xs text-gray-400">or continue with</span>
+            </div>
           </div>
 
+          {/* Social */}
           <div className="grid grid-cols-2 gap-3">
-            <button type="button"
+            <button
+              type="button"
               onClick={() => { login({ id: Date.now(), name: 'Google User', email: 'user@gmail.com', phone: '' }); navigate('/') }}
-              className="flex items-center justify-center gap-2 border border-gray-200 hover:bg-gray-50 py-3 rounded-xl text-sm font-semibold text-gray-700 transition-colors">
+              className="flex items-center justify-center gap-2 border border-gray-200 hover:bg-gray-50 py-3 rounded-xl text-sm font-semibold text-gray-700 transition-colors"
+            >
               <GoogleIcon /> Google
             </button>
-            <button type="button"
+            <button
+              type="button"
               onClick={() => { login({ id: Date.now(), name: 'Apple User', email: 'user@icloud.com', phone: '' }); navigate('/') }}
-              className="flex items-center justify-center gap-2 border border-gray-200 hover:bg-gray-50 py-3 rounded-xl text-sm font-semibold text-gray-700 transition-colors">
+              className="flex items-center justify-center gap-2 border border-gray-200 hover:bg-gray-50 py-3 rounded-xl text-sm font-semibold text-gray-700 transition-colors"
+            >
               <AppleIcon /> Apple
             </button>
           </div>
