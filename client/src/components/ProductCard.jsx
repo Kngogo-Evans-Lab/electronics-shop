@@ -131,7 +131,7 @@ export default function ProductCard({ product, compact = false }) {
           )}
         </div>
 
-        <button
+        <butto
           onClick={() => addToCart(product)}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded-lg transition-colors"
         >
