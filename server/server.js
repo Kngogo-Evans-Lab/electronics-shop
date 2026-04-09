@@ -22,9 +22,15 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-app.use(cors({ 
-  origin: 'https://electronics-shop-api-13smrender.vercel.app',
-  credentials: true 
+import cors from "cors";
+
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://sketch-tech-electronics.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 }));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
