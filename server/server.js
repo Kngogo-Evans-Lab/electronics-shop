@@ -35,54 +35,15 @@ app.get("/", (req, res) => {
 });
 
 // ── MongoDB Connection ─────────────────────────────────────────────────────────
+// ── MongoDB Connection ─────────────────────────────────────────────────────────
 const connectDB = async () => {
   try {
-    if (!process.env.MONGO_URI) throw new Error("MONGO_URI not set in environment");
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    if (!process.env.MONGO_URI) throw new Error("MONGO_URI not set");
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB Connected!");
   } catch (error) {
     console.error("MongoDB Connection FAILED:", error.message);
-    process.exit(1);
-  }
-};
-
-// ── Models ───────────────────────────────────────────────────────────────────
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  phone: { type: String, trim: true, default: "" },
-  password: { type: String, required: true },
-}, { timestamps: true });
-
-const User = mongoose.model("User", userSchema);
-
-const productSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  sku: { type: String, required: true, trim: true },
-  price: { type: Number, required: true, min: 0 },
-  category: { type: String, required: true, trim: true },
-  brand: { type: String, trim: true },
-  description: { type: String, trim: true },
-  specs: { type: String, trim: true },
-  imageUrl: { type: String, trim: true },
-  salePrice: { type: Number, min: 0, default: null },
-  inStock: { type: Boolean, default: true },
-}, { timestamps: true });
-
-const Product = mongoose.model("Product", productSchema);
-
-// ── Auth Middleware ───────────────────────────────────────────────────────────
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "No token provided" });
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ error: "Invalid token" });
+    // Don't exit — let server stay alive
   }
 };
 
@@ -113,8 +74,8 @@ app.post("/api/upload", upload.array("images", 5), (req, res) => {
 });
 
 // ── Start Server ─────────────────────────────────────────────────────────────
-connectDB().then(() => {
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+// ── Start ─────────────────────────────────────────────────────────────────────
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("Server running on port " + PORT);
 });
+connectDB();
