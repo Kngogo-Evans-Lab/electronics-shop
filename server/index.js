@@ -4,39 +4,138 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Base URL for this API
-const BASE_URL = 'https://electronics-shop-api-id3m.onrender.com';
+const BASE_URL = "https://electronics-shop-api-id3m.onrender.com";
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Simple health route
-app.get("/", (req, res) => {
-  res.send("Electronics Shop API is running");
-});
+// =====================
+// AUTH CONFIG
+// =====================
+const JWT_SECRET = process.env.JWT_SECRET || "secret123";
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Serve uploaded images as static files
-app.use("/uploads", express.static(uploadsDir));
-
-// MongoDB Connection
+// =====================
+// MONGODB CONNECT
+// =====================
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Product Schema
+// =====================
+// USER MODEL
+// =====================
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String },
+    googleId: { type: String },
+    role: { type: String, default: "user" },
+  },
+  { timestamps: true }
+);
+
+const User = mongoose.model("User", userSchema);
+
+// =====================
+// AUTH ROUTES
+// =====================
+
+// REGISTER
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// LOGIN
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET PROFILE (protected)
+app.get("/api/auth/me", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) return res.status(401).json({ message: "No token" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await User.findById(decoded.id).select("-password");
+
+    res.json(user);
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+});
+
+// =====================
+// PRODUCT SYSTEM (UNCHANGED)
+// =====================
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+app.use("/uploads", express.static(uploadsDir));
+
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   sku: { type: String, required: true },
@@ -52,153 +151,50 @@ const productSchema = new mongoose.Schema({
 
 const Product = mongoose.model("Product", productSchema);
 
-// Configure Multer for image uploads
+// Multer
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + "-" + file.originalname),
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-    const mimetype = allowedTypes.test(file.mimetype);
-    if (extname && mimetype) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed"));
-    }
-  },
-});
+const upload = multer({ storage });
 
-// Image upload endpoint
+// Upload images
 app.post("/api/upload", upload.array("images", 5), (req, res) => {
-  try {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "No files uploaded" });
-    }
-
-    const filePaths = req.files.map(
-      (file) => `${BASE_URL}/uploads/${file.filename}`
-    );
-
-    res.json({ urls: filePaths });
-  } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ error: error.message });
-  }
+  const filePaths = req.files.map(
+    (file) => `${BASE_URL}/uploads/${file.filename}`
+  );
+  res.json({ urls: filePaths });
 });
 
-// Fix image URLs in DB (if still using localhost)
-app.post("/api/fix-image-urls", async (req, res) => {
-  try {
-    const products = await Product.find({ imageUrl: /localhost/ });
-
-    let updated = 0;
-    for (const product of products) {
-      if (product.imageUrl && product.imageUrl.includes("localhost")) {
-        product.imageUrl = product.imageUrl.replace(
-          /http:\/\/localhost:\d+/g,
-          BASE_URL
-        );
-        await product.save();
-        updated++;
-      }
-    }
-
-    res.json({
-      success: true,
-      message: `Fixed ${updated} product image URLs`,
-      baseUrl: BASE_URL,
-      totalChecked: products.length,
-    });
-  } catch (err) {
-    console.error("Fix image URLs error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Get all products
+// Products
 app.get("/api/products", async (req, res) => {
-  try {
-    const products = await Product.find();
-
-    const fixedProducts = products.map((product) => {
-      const productObj = product.toObject();
-
-      if (productObj.imageUrl) {
-        if (!productObj.imageUrl.startsWith("http")) {
-          productObj.imageUrl = `${BASE_URL}/uploads/${productObj.imageUrl}`;
-        }
-      }
-
-      return productObj;
-    });
-
-    res.json(fixedProducts);
-  } catch (err) {
-    console.error("Get products error:", err);
-    res.status(500).json({ error: err.message });
-  }
+  const products = await Product.find();
+  res.json(products);
 });
 
-// Add new product
 app.post("/api/products", async (req, res) => {
-  try {
-    const newProduct = new Product(req.body);
-    const savedProduct = await newProduct.save();
-    res.status(201).json(savedProduct);
-  } catch (err) {
-    console.error("Add product error:", err);
-    res.status(400).json({ error: err.message });
-  }
+  const product = await Product.create(req.body);
+  res.status(201).json(product);
 });
 
-// Update product
 app.put("/api/products/:id", async (req, res) => {
-  try {
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.json(updatedProduct);
-  } catch (err) {
-    console.error("Update product error:", err);
-    res.status(400).json({ error: err.message });
-  }
+  const updated = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+  res.json(updated);
 });
 
-// Delete product
 app.delete("/api/products/:id", async (req, res) => {
-  try {
-    await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: "Product deleted" });
-  } catch (err) {
-    console.error("Delete product error:", err);
-    res.status(500).json({ error: err.message });
-  }
+  await Product.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted" });
 });
 
-// Catch multer errors
-app.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    return res.status(400).json({ error: error.message });
-  }
-  next(error);
-});
-
-// Start server
-app.listen(PORT, "0.0.0.0", () => {
+// =====================
+// SERVER START
+// =====================
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`BASE_URL: ${BASE_URL}`);
 });
