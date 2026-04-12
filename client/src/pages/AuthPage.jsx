@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { useGoogleLogin } from '@react-oauth/google' // stays here
+import { useGoogleLogin } from '@react-oauth/google'
 
 const API = "https://electronics-shop-api-id3m.onrender.com";
 
@@ -15,31 +15,11 @@ function PasswordStrength({ password }) {
   ]
   const score = checks.filter(c => c.pass).length
   const barColors = ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-green-500']
-  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong']
-  const labelColors = ['', 'text-red-500', 'text-orange-500', 'text-yellow-600', 'text-green-600']
   return (
     <div className="mt-2 space-y-1.5">
       <div className="flex gap-1">
         {[0, 1, 2, 3].map(i => (
-          <div
-            key={i}
-            className={`flex-1 h-1.5 rounded-full transition-colors ${
-              i < score ? barColors[score - 1] : 'bg-gray-200'
-            }`}
-          />
-        ))}
-      </div>
-      {score > 0 && <p className={`text-xs font-semibold ${labelColors[score]}`}>{labels[score]}</p>}
-      <div className="grid grid-cols-2 gap-1">
-        {checks.map(c => (
-          <div
-            key={c.label}
-            className={`text-xs flex items-center gap-1 ${
-              c.pass ? 'text-green-600' : 'text-gray-400'
-            }`}
-          >
-            <span>{c.pass ? '✓' : '○'}</span> {c.label}
-          </div>
+          <div key={i} className={`flex-1 h-1.5 rounded ${i < score ? barColors[score - 1] : 'bg-gray-200'}`} />
         ))}
       </div>
     </div>
@@ -47,12 +27,24 @@ function PasswordStrength({ password }) {
 }
 
 function Spinner() {
+  return <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+}
+
+function InputField({ label, error, children, ...props }) {
   return (
-    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
+    <div>
+      <label className="block text-sm font-semibold mb-1">{label}</label>
+      <div className="relative">
+        <input {...props} className="w-full border px-3 py-2 rounded-lg" />
+        {children}
+      </div>
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
   )
+}
+
+function GoogleIcon() {
+  return <span>G</span>
 }
 
 export default function AuthPage() {
@@ -62,21 +54,10 @@ export default function AuthPage() {
   const [mode, setMode] = useState(searchParams.get('mode') === 'register' ? 'register' : 'login')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
 
-  const [loginForm, setLoginForm] = useState({ email: '', password: '', remember: false })
-  const [registerForm, setRegisterForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    agreeTerms: false,
-  })
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' })
 
-  // ✅ FIX: moved hook inside component
+  // ✅ FIXED HOOK
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
@@ -100,28 +81,69 @@ export default function AuthPage() {
         login(data.user)
         navigate('/')
       } catch {
-        setErrors({ general: 'Google login failed. Try again.' })
+        setErrors({ general: 'Google login failed' })
       }
-    },
-    onError: () => setErrors({ general: 'Google login failed. Try again.' })
+    }
   })
 
   useEffect(() => {
     if (user) navigate('/')
   }, [user, navigate])
 
-  const updateLogin = field => e => {
-    const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
-    setLoginForm(f => ({ ...f, [field]: val }))
-    if (errors[field]) setErrors(er => ({ ...er, [field]: '' }))
-    if (errors.general) setErrors(er => ({ ...er, general: '' }))
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const res = await fetch(`${API}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setErrors({ general: data.error })
+        setLoading(false)
+        return
+      }
+      localStorage.setItem('token', data.token)
+      login(data.user)
+      navigate('/')
+    } catch {
+      setErrors({ general: 'Network error' })
+    }
+    setLoading(false)
   }
 
-  const updateRegister = field => e => {
-    const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
-    setRegisterForm(f => ({ ...f, [field]: val }))
-    if (errors[field]) setErrors(er => ({ ...er, [field]: '' }))
-    if (errors.general) setErrors(er => ({ ...er, general: '' }))
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-md space-y-4">
 
-  // ... REST OF YOUR CODE UNCHANGED
+        {errors.general && <div className="text-red-500">{errors.general}</div>}
+
+        <form onSubmit={handleLogin} className="space-y-3">
+          <InputField
+            label="Email"
+            value={loginForm.email}
+            onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
+          />
+
+          <InputField
+            label="Password"
+            type="password"
+            value={loginForm.password}
+            onChange={e => setLoginForm(f => ({ ...f, password: e.target.value }))}
+          />
+
+          <button className="w-full bg-blue-600 text-white py-2 rounded">
+            {loading ? <Spinner /> : 'Login'}
+          </button>
+        </form>
+
+        <button onClick={() => googleLogin()} className="w-full border py-2 rounded flex justify-center gap-2">
+          <GoogleIcon /> Google
+        </button>
+
+      </div>
+    </div>
+  )
+}
