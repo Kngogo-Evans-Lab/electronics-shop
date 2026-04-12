@@ -15,6 +15,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "techstore_secret_key_2024";
 
+
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -38,6 +40,39 @@ var connectDB = async function() {
     console.error("MongoDB Connection FAILED:", error.message);
   }
 };
+
+
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client("360074851790-0lr673nbbl2mj2jmb2fjb2tdkisbq22c.apps.googleusercontent.com");
+
+app.post("/api/auth/google", async function(req, res) {
+  try {
+    var email = req.body.email;
+    var name = req.body.name;
+    if (!email) return res.status(400).json({ error: "Invalid Google token" });
+
+    var user = await User.findOne({ email: email });
+    if (!user) {
+      user = await User.create({
+        name: name || "Google User",
+        email: email,
+        phone: "",
+        password: await bcrypt.hash(Math.random().toString(36) + Date.now(), 12),
+      });
+    }
+
+    var token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    res.json({
+      token: token,
+      user: { id: user._id, name: user.name, email: user.email, phone: user.phone },
+    });
+  } catch (error) {
+    console.error("Google auth error:", error);
+    res.status(500).json({ error: "Google authentication failed" });
+  }
+});
+
+
 
 var userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },

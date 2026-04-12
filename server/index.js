@@ -8,6 +8,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+const passport = require("passport");
+require("./passport");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -16,6 +19,24 @@ const BASE_URL = "https://electronics-shop-api-id3m.onrender.com";
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
+
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { session: false }),
+  (req, res) => {
+    res.json({
+      message: "Google login successful",
+      user: req.user,
+    });
+  }
+);
 
 // =====================
 // AUTH CONFIG
@@ -125,7 +146,19 @@ app.get("/api/auth/me", async (req, res) => {
     res.status(401).json({ message: "Invalid token" });
   }
 });
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { session: false }),
+  (req, res) => {
+    // user now has JWT inside req.user
+    const user = req.user;
 
+    // send token to frontend
+    res.redirect(
+      `http://localhost:5173/login?token=${user.token}`
+    );
+  }
+);
 // =====================
 // PRODUCT SYSTEM (UNCHANGED)
 // =====================
