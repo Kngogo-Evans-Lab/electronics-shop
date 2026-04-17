@@ -1,4 +1,4 @@
-# Electronics Shop
+# Ecommerce online store
 
 A modern, full-stack e-commerce website for selling electronics built with React, Node.js, Express, and MongoDB.
 
@@ -242,7 +242,7 @@ ISC
 
 ## Author
 
-Electronics Shop Team
+Kangogo Evans
 
 ## Support
 
