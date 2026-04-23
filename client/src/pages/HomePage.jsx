@@ -91,7 +91,7 @@ export default function HomePage() {
 
       {/* ── Categories Grid ───────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
+        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2 sm:gap-3">
           {CATEGORIES.filter(c => c !== "all").map((cat) => (
             <Link
               key={cat}
@@ -110,7 +110,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="bg-red-600 rounded-2xl overflow-hidden">
           {/* Flash sale header */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 flex-wrap gap-2">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">⚡</span>
@@ -124,8 +124,8 @@ export default function HomePage() {
           </div>
 
           {/* Flash sale products */}
-          <div className="bg-gray-50 p-4 sm:p-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-gray-50 p-3 sm:p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {flashSaleProducts.map((p) => (
                 <ProductCard key={p.id} product={p} compact />
               ))}
@@ -145,7 +145,7 @@ export default function HomePage() {
             See All <span>→</span>
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {products.slice(0, 10).map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
