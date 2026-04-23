@@ -184,7 +184,7 @@ export default function AuthPage() {
   const [searchParams]  = useSearchParams()
 
   const [mode,             setMode]             = useState(searchParams.get('mode') === 'register' ? 'register' : 'login')
-  const [regMethod,        setRegMethod]        = useState('email')   // 'email' | 'phone'
+  const [regMethod] = useState('email')   // email only — phone registration removed
   const [step,             setStep]             = useState(0)         // 0=details 1=verify
   const [loading,          setLoading]          = useState(false)
   const [errors,           setErrors]           = useState({})
@@ -461,18 +461,6 @@ export default function AuthPage() {
   const renderRegDetails = () => (
     <form onSubmit={handleSendOtp} className="space-y-4">
 
-      {/* email / phone toggle */}
-      <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
-        {['email', 'phone'].map(m => (
-          <button key={m} type="button" onClick={() => { setRegMethod(m); setErrors({}) }}
-            className={`flex-1 py-1.5 rounded-md text-sm font-semibold flex items-center justify-center gap-1.5 transition-all
-              ${regMethod === m ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-            {m === 'email' ? emailIco : phoneIco}
-            {m === 'email' ? 'Email' : 'Phone'}
-          </button>
-        ))}
-      </div>
-
       {/* full name */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
@@ -486,57 +474,18 @@ export default function AuthPage() {
         <ErrorMsg msg={errors.name} />
       </div>
 
-      {/* email OR phone */}
-      {regMethod === 'email' ? (
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-          <div className="relative">
-            <FieldIcon icon={emailIco} />
-            <input type="email" placeholder="you@example.com"
-              value={regForm.email}
-              onChange={e => setRegForm(f => ({ ...f, email: e.target.value }))}
-              className={inputCls(errors.email)} />
-          </div>
-          <ErrorMsg msg={errors.email} />
+      {/* email */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+        <div className="relative">
+          <FieldIcon icon={emailIco} />
+          <input type="email" placeholder="you@example.com"
+            value={regForm.email}
+            onChange={e => setRegForm(f => ({ ...f, email: e.target.value }))}
+            className={inputCls(errors.email)} />
         </div>
-      ) : (
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
-          <div className="flex gap-2">
-            {/* country code picker */}
-            <div className="relative shrink-0">
-              <button type="button" onClick={() => setShowCountryDrop(v => !v)}
-                className="h-full px-2.5 border border-gray-300 rounded-lg flex items-center gap-1 text-sm font-medium bg-white hover:border-blue-400 transition-all whitespace-nowrap">
-                <span>{countryCode.flag}</span>
-                <span className="text-gray-700">{countryCode.code}</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-              {showCountryDrop && (
-                <div className="absolute top-full mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-lg z-50 w-48 overflow-y-auto max-h-56">
-                  {COUNTRY_CODES.map(c => (
-                    <button key={c.code} type="button"
-                      onClick={() => { setCountryCode(c); setShowCountryDrop(false) }}
-                      className="w-full px-3 py-2 flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 text-left">
-                      <span>{c.flag}</span>
-                      <span className="flex-1">{c.name}</span>
-                      <span className="text-gray-400 text-xs">{c.code}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            {/* number input */}
-            <div className="relative flex-1">
-              <FieldIcon icon={phoneIco} />
-              <input type="tel" placeholder="7XX XXX XXX"
-                value={regForm.phone}
-                onChange={e => setRegForm(f => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
-                className={inputCls(errors.phone)} />
-            </div>
-          </div>
-          <ErrorMsg msg={errors.phone} />
-        </div>
-      )}
+        <ErrorMsg msg={errors.email} />
+      </div>
 
       {/* password */}
       <div>
@@ -637,9 +586,7 @@ export default function AuthPage() {
     </div>
   )
 
-  const regSteps = regMethod === 'email'
-    ? ['Your Details', 'Verify Email']
-    : ['Your Details', 'Verify Phone']
+  const regSteps = ['Your Details', 'Verify Email']
 
   // ── page shell ─────────────────────────────────────────────────────────────
   return (
