@@ -42,7 +42,7 @@ export default function Navbar() {
             <span>🚚 Fast delivery across Kenya</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/track-order" className="hover:underline">Track Order</Link>
+            <Link to="/orders" className="hover:underline">Track Order</Link>
             <span>|</span>
             <Link to="/help" className="hover:underline">Help Center</Link>
           </div>

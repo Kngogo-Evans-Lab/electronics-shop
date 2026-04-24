@@ -1,7 +1,19 @@
 // FILE: src/components/Footer.jsx
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Footer() {
+  const [email, setEmail] = useState("")
+  const [subscribed, setSubscribed] = useState(false)
+
+  const handleSubscribe = (e) => {
+    e.preventDefault()
+    if (!email.trim()) return
+    setSubscribed(true)
+    setEmail("")
+    setTimeout(() => setSubscribed(false), 4000)
+  }
+
   return (
     <footer className="bg-gray-900 text-gray-400 mt-8">
       {/* Newsletter */}
@@ -12,16 +24,26 @@ export default function Footer() {
               <h3 className="text-white font-bold text-lg">Subscribe to our newsletter</h3>
               <p className="text-blue-100 text-sm">Get the latest deals and tech news delivered to your inbox</p>
             </div>
-            <div className="flex w-full sm:w-auto gap-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 sm:w-64 px-4 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none"
-              />
-              <button className="bg-white text-blue-700 font-bold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition text-sm whitespace-nowrap">
-                Subscribe
-              </button>
-            </div>
+            {subscribed ? (
+              <div className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold text-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Subscribed! Thank you.
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex w-full sm:w-auto gap-2">
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="flex-1 sm:w-64 px-4 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none"
+                />
+                <button type="submit" className="bg-white text-blue-700 font-bold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition text-sm whitespace-nowrap">
+                  Subscribe
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
@@ -56,39 +78,39 @@ export default function Footer() {
               title: "Shop",
               links: [
                 { label: "All Products", to: "/products" },
-                { label: "Phones", to: "/products?category=phones" },
-                { label: "Laptops", to: "/products?category=laptops" },
-                { label: "Audio", to: "/products?category=audio" },
-                { label: "Gaming", to: "/products?category=gaming" },
+                { label: "Phones",       to: "/products?category=phones" },
+                { label: "Laptops",      to: "/products?category=laptops" },
+                { label: "Audio",        to: "/products?category=audio" },
+                { label: "Gaming",       to: "/products?category=gaming" },
               ],
             },
             {
               title: "Customer Service",
               links: [
-                { label: "My Account", to: "/account" },
-                { label: "My Orders", to: "/orders" },
-                { label: "Track Order", to: "/orders" },
-                { label: "Returns & Refunds", to: "/" },
-                { label: "Help Center", to: "/" },
+                { label: "My Account",      to: "/account" },
+                { label: "My Orders",       to: "/orders" },
+                { label: "Track Order",     to: "/orders" },
+                { label: "Returns & Refunds", to: "/help" },
+                { label: "Help Center",     to: "/help" },
               ],
             },
             {
               title: "Company",
               links: [
-                { label: "About Us", to: "/" },
-                { label: "Careers", to: "/" },
-                { label: "Press", to: "/" },
-                { label: "Contact Us", to: "/" },
-                { label: "Blog", to: "/" },
+                { label: "About Us",   to: "/about" },
+                { label: "Careers",    to: "/about" },
+                { label: "Press",      to: "/about" },
+                { label: "Contact Us", to: "/contact" },
+                { label: "Blog",       to: "/about" },
               ],
             },
             {
               title: "Legal",
               links: [
-                { label: "Privacy Policy", to: "/" },
-                { label: "Terms of Service", to: "/" },
-                { label: "Cookie Policy", to: "/" },
-                { label: "Sitemap", to: "/" },
+                { label: "Privacy Policy",   to: "/privacy" },
+                { label: "Terms of Service", to: "/terms" },
+                { label: "Cookie Policy",    to: "/privacy" },
+                { label: "Sitemap",          to: "/products" },
               ],
             },
           ].map((section) => (

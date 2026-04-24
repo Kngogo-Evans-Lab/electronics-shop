@@ -5,19 +5,6 @@ import { useGoogleLogin } from '@react-oauth/google'
 
 const API = "https://electronics-shop-api-id3m.onrender.com"
 
-const COUNTRY_CODES = [
-  { code: '+254', flag: '🇰🇪', name: 'Kenya' },
-  { code: '+1',   flag: '🇺🇸', name: 'USA' },
-  { code: '+44',  flag: '🇬🇧', name: 'UK' },
-  { code: '+255', flag: '🇹🇿', name: 'Tanzania' },
-  { code: '+256', flag: '🇺🇬', name: 'Uganda' },
-  { code: '+251', flag: '🇪🇹', name: 'Ethiopia' },
-  { code: '+234', flag: '🇳🇬', name: 'Nigeria' },
-  { code: '+27',  flag: '🇿🇦', name: 'S. Africa' },
-  { code: '+233', flag: '🇬🇭', name: 'Ghana' },
-  { code: '+91',  flag: '🇮🇳', name: 'India' },
-]
-
 // ── small pieces ───────────────────────────────────────────────────────────────
 
 function Spinner() {
@@ -70,7 +57,6 @@ function PasswordStrength({ password }) {
   )
 }
 
-// ✅ FIX: length is now always 6 to match backend
 function OtpInput({ length = 6, value, onChange }) {
   const refs   = useRef([])
   const digits = value.split('').concat(Array(length).fill('')).slice(0, length)
@@ -152,11 +138,6 @@ const userIco = (
     <circle cx="12" cy="7" r="4"/>
   </svg>
 )
-const phoneIco = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.09 9.81 19.79 19.79 0 01.06 1.18 2 2 0 012.03 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6z"/>
-  </svg>
-)
 const eyeOpen = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -183,23 +164,20 @@ export default function AuthPage() {
   const navigate        = useNavigate()
   const [searchParams]  = useSearchParams()
 
-  const [mode,             setMode]             = useState(searchParams.get('mode') === 'register' ? 'register' : 'login')
-  const [regMethod] = useState('email')   // email only — phone registration removed
-  const [step,             setStep]             = useState(0)         // 0=details 1=verify
-  const [loading,          setLoading]          = useState(false)
-  const [errors,           setErrors]           = useState({})
-  const [showPwd,          setShowPwd]          = useState(false)
-  const [showConfirm,      setShowConfirm]      = useState(false)
-  const [countryCode,      setCountryCode]      = useState(COUNTRY_CODES[0])
-  const [showCountryDrop,  setShowCountryDrop]  = useState(false)
-  const [otp,              setOtp]              = useState('')
-  const [otpError,         setOtpError]         = useState('')
-  const [resendTimer,      setResendTimer]      = useState(0)
-  const [showToast,        setShowToast]        = useState(false)
+  const [mode,        setMode]        = useState(searchParams.get('mode') === 'register' ? 'register' : 'login')
+  const [step,        setStep]        = useState(0)
+  const [loading,     setLoading]     = useState(false)
+  const [errors,      setErrors]      = useState({})
+  const [showPwd,     setShowPwd]     = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [otp,         setOtp]         = useState('')
+  const [otpError,    setOtpError]    = useState('')
+  const [resendTimer, setResendTimer] = useState(0)
+  const [showToast,   setShowToast]   = useState(false)
   const timerRef = useRef(null)
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
-  const [regForm,   setRegForm]   = useState({ name: '', email: '', phone: '', password: '', confirm: '' })
+  const [regForm,   setRegForm]   = useState({ name: '', email: '', password: '', confirm: '' })
 
   useEffect(() => { if (user) navigate('/') }, [user, navigate])
   useEffect(() => () => clearInterval(timerRef.current), [])
@@ -267,45 +245,35 @@ export default function AuthPage() {
     setLoading(false)
   }
 
-  // ── Validate register form ──────────────────────────────────────────────────
+  // ── Validate register (email only) ──────────────────────────────────────────
   const validateReg = () => {
     const e = {}
     if (!regForm.name.trim())                                  e.name     = 'Full name is required'
-    if (regMethod === 'email') {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regForm.email)) e.email    = 'Enter a valid email address'
-    } else {
-      if (!/^\d{7,15}$/.test(regForm.phone))                  e.phone    = 'Enter a valid phone number'
-    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regForm.email))   e.email    = 'Enter a valid email address'
     if (regForm.password.length < 8)                          e.password = 'Minimum 8 characters'
     if (regForm.password !== regForm.confirm)                 e.confirm  = 'Passwords do not match'
     setErrors(e)
     return Object.keys(e).length === 0
   }
 
-  // ── Step 0: Send OTP ────────────────────────────────────────────────────────
+  // ── Step 0: Send OTP to email ────────────────────────────────────────────────
   const handleSendOtp = async (e) => {
     e.preventDefault()
     if (!validateReg()) return
     setLoading(true)
     setErrors({})
     try {
-      const payload = regMethod === 'email'
-        ? { type: 'email', email: regForm.email }
-        : { type: 'phone', phone: `${countryCode.code}${regForm.phone}` }
-
       const res  = await fetch(`${API}/api/auth/send-otp`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
+        body:    JSON.stringify({ type: 'email', email: regForm.email }),
       })
       const data = await res.json()
-
       if (!res.ok) {
         setErrors({ general: data.error || 'Failed to send code. Please try again.' })
         setLoading(false)
         return
       }
-
       setStep(1)
       startTimer()
     } catch {
@@ -314,65 +282,52 @@ export default function AuthPage() {
     setLoading(false)
   }
 
-  // ── Step 1: Verify OTP & create account ────────────────────────────────────
+  // ── Step 1: Verify OTP & create account ─────────────────────────────────────
   const handleVerifyOtp = async () => {
-    // ✅ FIX: check for 6 digits (was checking length < 6 correctly but OtpInput was set to 4)
     if (otp.length < 6) { setOtpError('Enter the complete 6-digit code'); return }
     setLoading(true)
     setOtpError('')
     try {
-      const payload = {
-        name:     regForm.name,
-        password: regForm.password,
-        otp,
-        ...(regMethod === 'email'
-          ? { email: regForm.email }
-          : { phone: `${countryCode.code}${regForm.phone}` }),
-      }
       const res  = await fetch(`${API}/api/auth/register`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
+        body:    JSON.stringify({
+          name:     regForm.name,
+          email:    regForm.email,
+          password: regForm.password,
+          otp,
+        }),
       })
       const data = await res.json()
-
       if (!res.ok) {
         setOtpError(data.error || 'Invalid or expired code. Please try again.')
         setLoading(false)
         return
       }
-
-      // Success — show toast then redirect to login
       setOtpError('')
       setShowToast(true)
-      setTimeout(() => {
-        setShowToast(false)
-        switchMode('login')
-      }, 2500)
+      setTimeout(() => { setShowToast(false); switchMode('login') }, 2500)
     } catch {
       setOtpError('Network error. Please try again.')
     }
     setLoading(false)
   }
 
-  // ── Resend OTP ──────────────────────────────────────────────────────────────
+  // ── Resend OTP ───────────────────────────────────────────────────────────────
   const handleResend = async () => {
     if (resendTimer > 0) return
     setOtp(''); setOtpError('')
-    const payload = regMethod === 'email'
-      ? { type: 'email', email: regForm.email }
-      : { type: 'phone', phone: `${countryCode.code}${regForm.phone}` }
     try {
       const res = await fetch(`${API}/api/auth/send-otp`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
+        body:    JSON.stringify({ type: 'email', email: regForm.email }),
       })
       if (res.ok) startTimer()
     } catch { /* silent fail */ }
   }
 
-  // ── helpers ────────────────────────────────────────────────────────────────
+  // ── helpers ─────────────────────────────────────────────────────────────────
   const inputCls = (err) =>
     `w-full border ${err ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'} px-3 py-2.5 pl-10 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all`
 
@@ -414,7 +369,7 @@ export default function AuthPage() {
     </button>
   )
 
-  // ── render: LOGIN ──────────────────────────────────────────────────────────
+  // ── render: LOGIN ────────────────────────────────────────────────────────────
   const renderLogin = () => (
     <form onSubmit={handleLogin} className="space-y-4">
       <div>
@@ -457,11 +412,10 @@ export default function AuthPage() {
     </form>
   )
 
-  // ── render: REGISTER step 0 ────────────────────────────────────────────────
+  // ── render: REGISTER step 0 ──────────────────────────────────────────────────
   const renderRegDetails = () => (
     <form onSubmit={handleSendOtp} className="space-y-4">
 
-      {/* full name */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
         <div className="relative">
@@ -474,7 +428,6 @@ export default function AuthPage() {
         <ErrorMsg msg={errors.name} />
       </div>
 
-      {/* email */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
         <div className="relative">
@@ -487,7 +440,6 @@ export default function AuthPage() {
         <ErrorMsg msg={errors.email} />
       </div>
 
-      {/* password */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
         <div className="relative">
@@ -502,7 +454,6 @@ export default function AuthPage() {
         <ErrorMsg msg={errors.password} />
       </div>
 
-      {/* confirm */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm Password</label>
         <div className="relative">
@@ -534,7 +485,7 @@ export default function AuthPage() {
     </form>
   )
 
-  // ── render: REGISTER step 1 — OTP verify ──────────────────────────────────
+  // ── render: REGISTER step 1 — verify email ───────────────────────────────────
   const renderVerify = () => (
     <div className="text-center">
       <div className="w-16 h-16 rounded-full bg-orange-400 flex items-center justify-center mx-auto mb-5 shadow-md">
@@ -543,20 +494,11 @@ export default function AuthPage() {
         </svg>
       </div>
 
-      <h3 className="text-xl font-bold text-gray-900 mb-2">
-        Verify your {regMethod === 'email' ? 'email address' : 'phone number'}
-      </h3>
-      <p className="text-sm text-gray-500 leading-relaxed mb-1">
-        We sent a 6-digit verification code to
-      </p>
-      <p className="text-sm font-semibold text-gray-800 mb-2">
-        {regMethod === 'email' ? regForm.email : `${countryCode.code}${regForm.phone}`}
-      </p>
-      <p className="text-xs text-gray-400 mb-4">
-        Check your {regMethod === 'email' ? 'inbox (and spam folder)' : 'messages'}
-      </p>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">Verify your email address</h3>
+      <p className="text-sm text-gray-500 leading-relaxed mb-1">We sent a 6-digit verification code to</p>
+      <p className="text-sm font-semibold text-gray-800 mb-2">{regForm.email}</p>
+      <p className="text-xs text-gray-400 mb-4">Check your inbox (and spam folder)</p>
 
-      {/* ✅ FIX: length={6} matches the 6-digit OTP generated by backend */}
       <OtpInput length={6} value={otp} onChange={setOtp} />
 
       {otpError && (
@@ -581,18 +523,15 @@ export default function AuthPage() {
       <button type="button" onClick={() => { setStep(0); setOtp(''); setOtpError('') }}
         className="mt-4 text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 mx-auto transition-colors">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        Change {regMethod === 'email' ? 'email address' : 'phone number'}
+        Change email address
       </button>
     </div>
   )
 
-  const regSteps = ['Your Details', 'Verify Email']
-
-  // ── page shell ─────────────────────────────────────────────────────────────
+  // ── page shell ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center px-4 py-8">
 
-      {/* success toast */}
       {showToast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
           <div className="flex items-center gap-3 bg-white border border-green-200 shadow-2xl rounded-2xl px-6 py-4 min-w-72">
@@ -611,7 +550,6 @@ export default function AuthPage() {
 
       <div className="w-full max-w-md">
 
-        {/* logo */}
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2.5">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
@@ -625,10 +563,8 @@ export default function AuthPage() {
           <p className="text-xs text-gray-400 mt-1">Kenya's trusted electronics marketplace</p>
         </div>
 
-        {/* card */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
 
-          {/* Sign In / Register tabs */}
           <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
             {['login', 'register'].map(m => (
               <button key={m} type="button" onClick={() => switchMode(m)}
@@ -639,16 +575,13 @@ export default function AuthPage() {
             ))}
           </div>
 
-          {/* stepper */}
-          {mode === 'register' && <Stepper steps={regSteps} current={step} />}
+          {mode === 'register' && <Stepper steps={['Your Details', 'Verify Email']} current={step} />}
 
-          {/* forms */}
           {mode === 'login'                  && renderLogin()}
           {mode === 'register' && step === 0 && renderRegDetails()}
           {mode === 'register' && step === 1 && renderVerify()}
         </div>
 
-        {/* footer links */}
         <div className="flex justify-center gap-4 mt-4 text-xs text-gray-400">
           <Link to="/help"    className="hover:text-gray-600 transition-colors">Help Center</Link>
           <Link to="/privacy" className="hover:text-gray-600 transition-colors">Privacy Policy</Link>

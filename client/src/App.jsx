@@ -15,6 +15,11 @@ const WishlistPage   = lazy(() => import('./pages/WishlistPage'))
 const OrdersPage     = lazy(() => import('./pages/OrderPage'))
 const AccountPage    = lazy(() => import('./pages/AccountPage'))
 const OrderSuccess   = lazy(() => import('./pages/OrderSuccessPage'))
+const HelpPage       = lazy(() => import('./pages/HelpPage'))
+const AboutPage      = lazy(() => import('./pages/AboutPage'))
+const ContactPage    = lazy(() => import('./pages/ContactPage'))
+const PrivacyPage    = lazy(() => import('./pages/PrivacyPage'))
+const TermsPage      = lazy(() => import('./pages/TermsPage'))
 
 function Loader() {
   return (
@@ -67,6 +72,13 @@ export default function App() {
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<CartPage />} />
+
+                {/* New public pages */}
+                <Route path="/help"    element={<HelpPage />} />
+                <Route path="/about"   element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms"   element={<TermsPage />} />
 
                 {/* Protected routes */}
                 <Route
