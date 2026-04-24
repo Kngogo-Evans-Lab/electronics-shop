@@ -5,8 +5,25 @@ import { useApp } from "../context/AppContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://electronics-shop-api-id3m.onrender.com';
 
-
 const STEPS = ["Shipping", "Payment", "Confirm"];
+
+// ✅ Moved outside CheckoutPage to prevent remount on every render
+const InputField = ({ label, value, onChange, error, placeholder, type = "text", required, children }) => (
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
+    <div className="relative">
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+      />
+      {children}
+    </div>
+    {error && <p className="text-xs text-red-500 mt-1">⚠ {error}</p>}
+  </div>
+);
 
 export default function CheckoutPage() {
   const { cart, cartTotal, user, placeOrder, toast } = useApp();
@@ -98,23 +115,6 @@ export default function CheckoutPage() {
       </div>
     );
   }
-
-  const InputField = ({ label, value, onChange, error, placeholder, type = "text", required, children }) => (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      <div className="relative">
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
-        />
-        {children}
-      </div>
-      {error && <p className="text-xs text-red-500 mt-1">⚠ {error}</p>}
-    </div>
-  );
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

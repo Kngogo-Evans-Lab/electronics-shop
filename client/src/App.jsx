@@ -15,6 +15,11 @@ const WishlistPage   = lazy(() => import('./pages/WishlistPage'))
 const OrdersPage     = lazy(() => import('./pages/OrderPage'))
 const AccountPage    = lazy(() => import('./pages/AccountPage'))
 const OrderSuccess   = lazy(() => import('./pages/OrderSuccessPage'))
+const AboutPage      = lazy(() => import('./pages/aboutpage'))
+const HelpPage       = lazy(() => import('./pages/helppage'))
+const ContactPage    = lazy(() => import('./pages/ContactPage'))
+const PrivacyPage    = lazy(() => import('./pages/PrivacyPage'))
+const TermsPage      = lazy(() => import('./pages/TermsPage'))
 
 function Loader() {
   return (
@@ -40,14 +45,12 @@ function NotFound() {
   )
 }
 
-// Wrapper for protected routes
 function PrivateRoute({ children }) {
   const { user } = useApp()
   if (!user) return <Navigate to="/auth" replace />
   return children
 }
 
-// Redirect logged-in users from auth page
 function AuthRoute({ children }) {
   const { user } = useApp()
   if (user) return <Navigate to="/" replace />
@@ -63,62 +66,26 @@ export default function App() {
           <main className="flex-1">
             <Suspense fallback={<Loader />}>
               <Routes>
-                <Route path="/" element={<HomePage />} />
+                {/* Public */}
+                <Route path="/"        element={<HomePage />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/cart" element={<CartPage />} />
+                <Route path="/cart"    element={<CartPage />} />
+                <Route path="/about"   element={<AboutPage />} />
+                <Route path="/help"    element={<HelpPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms"   element={<TermsPage />} />
 
-                {/* Protected routes */}
-                <Route
-                  path="/checkout"
-                  element={
-                    <PrivateRoute>
-                      <CheckoutPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/wishlist"
-                  element={
-                    <PrivateRoute>
-                      <WishlistPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/orders"
-                  element={
-                    <PrivateRoute>
-                      <OrdersPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/account"
-                  element={
-                    <PrivateRoute>
-                      <AccountPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/order-success"
-                  element={
-                    <PrivateRoute>
-                      <OrderSuccess />
-                    </PrivateRoute>
-                  }
-                />
+                {/* Protected */}
+                <Route path="/checkout"      element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
+                <Route path="/wishlist"      element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
+                <Route path="/orders"        element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
+                <Route path="/account"       element={<PrivateRoute><AccountPage /></PrivateRoute>} />
+                <Route path="/order-success" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
 
-                {/* Auth route */}
-                <Route
-                  path="/auth"
-                  element={
-                    <AuthRoute>
-                      <AuthPage />
-                    </AuthRoute>
-                  }
-                />
+                {/* Auth */}
+                <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -2,17 +2,85 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+const FacebookIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+  </svg>
+);
+
+const InstagramIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+);
+
+const TikTokIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.78a4.85 4.85 0 01-1.01-.09z" />
+  </svg>
+);
+
+const SOCIAL_LINKS = [
+  { label: "Facebook",  href: "https://facebook.com/TechStoreKenya",  hoverBg: "hover:bg-blue-600", icon: <FacebookIcon /> },
+  { label: "Instagram", href: "https://instagram.com/TechStoreKenya", hoverBg: "hover:bg-pink-600", icon: <InstagramIcon /> },
+  { label: "TikTok",    href: "https://tiktok.com/@TechStoreKenya",   hoverBg: "hover:bg-gray-600", icon: <TikTokIcon /> },
+];
+
+const NAV_SECTIONS = [
+  {
+    title: "Shop",
+    links: [
+      { label: "All Products", to: "/products" },
+      { label: "Phones",       to: "/products?category=phones" },
+      { label: "Laptops",      to: "/products?category=laptops" },
+      { label: "Audio",        to: "/products?category=audio" },
+      { label: "Gaming",       to: "/products?category=gaming" },
+    ],
+  },
+  {
+    title: "Customer Service",
+    links: [
+      { label: "My Account",        to: "/account" },
+      { label: "My Orders",         to: "/orders" },
+      { label: "Track Order",       to: "/orders" },
+      { label: "Returns & Refunds", to: "/help" },
+      { label: "Help Center",       to: "/help" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Us",   to: "/about" },
+      { label: "Careers",    to: "/about" },
+      { label: "Press",      to: "/about" },
+      { label: "Contact Us", to: "/contact" },
+      { label: "Blog",       to: "/about" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy",   to: "/privacy" },
+      { label: "Terms of Service", to: "/terms" },
+      { label: "Cookie Policy",    to: "/privacy" },
+      { label: "Sitemap",          to: "/products" },
+    ],
+  },
+];
+
 export default function Footer() {
-  const [email, setEmail] = useState("")
-  const [subscribed, setSubscribed] = useState(false)
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
   const handleSubscribe = (e) => {
-    e.preventDefault()
-    if (!email.trim()) return
-    setSubscribed(true)
-    setEmail("")
-    setTimeout(() => setSubscribed(false), 4000)
-  }
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSubscribed(true);
+    setEmail("");
+    setTimeout(() => setSubscribed(false), 4000);
+  };
 
   return (
     <footer className="bg-gray-900 text-gray-400 mt-8">
@@ -50,6 +118,7 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-8 mb-8">
+
           {/* Brand */}
           <div className="col-span-2 sm:col-span-4 lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-3">
@@ -62,62 +131,23 @@ export default function Footer() {
               </div>
               <span className="font-bold text-white text-lg">Tech<span className="text-blue-400">Store</span></span>
             </Link>
-            <p className="text-sm leading-relaxed mb-3">Kenya's #1 online electronics store. Genuine products, fast delivery, best prices.</p>
+            <p className="text-sm leading-relaxed mb-4">Kenya's #1 online electronics store. Genuine products, fast delivery, best prices.</p>
             <div className="flex gap-3">
-              {["📘", "🐦", "📸", "▶️"].map((icon, i) => (
-                <button key={i} className="w-8 h-8 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center text-sm transition-colors">
-                  {icon}
-                </button>
+              {SOCIAL_LINKS.map(s => (
+                <a key={s.label} href={s.href} target="_blank" rel="noreferrer" title={s.label}
+                  className={`w-8 h-8 bg-gray-800 ${s.hoverBg} hover:text-white text-gray-400 rounded-lg flex items-center justify-center transition-colors`}>
+                  {s.icon}
+                </a>
               ))}
             </div>
           </div>
 
-          {/* Links */}
-          {[
-            {
-              title: "Shop",
-              links: [
-                { label: "All Products", to: "/products" },
-                { label: "Phones",       to: "/products?category=phones" },
-                { label: "Laptops",      to: "/products?category=laptops" },
-                { label: "Audio",        to: "/products?category=audio" },
-                { label: "Gaming",       to: "/products?category=gaming" },
-              ],
-            },
-            {
-              title: "Customer Service",
-              links: [
-                { label: "My Account",      to: "/account" },
-                { label: "My Orders",       to: "/orders" },
-                { label: "Track Order",     to: "/orders" },
-                { label: "Returns & Refunds", to: "/help" },
-                { label: "Help Center",     to: "/help" },
-              ],
-            },
-            {
-              title: "Company",
-              links: [
-                { label: "About Us",   to: "/about" },
-                { label: "Careers",    to: "/about" },
-                { label: "Press",      to: "/about" },
-                { label: "Contact Us", to: "/contact" },
-                { label: "Blog",       to: "/about" },
-              ],
-            },
-            {
-              title: "Legal",
-              links: [
-                { label: "Privacy Policy",   to: "/privacy" },
-                { label: "Terms of Service", to: "/terms" },
-                { label: "Cookie Policy",    to: "/privacy" },
-                { label: "Sitemap",          to: "/products" },
-              ],
-            },
-          ].map((section) => (
+          {/* Nav sections */}
+          {NAV_SECTIONS.map(section => (
             <div key={section.title}>
               <h3 className="text-white font-semibold text-sm mb-3">{section.title}</h3>
               <ul className="space-y-2">
-                {section.links.map((link) => (
+                {section.links.map(link => (
                   <li key={link.label}>
                     <Link to={link.to} className="text-sm hover:text-blue-400 transition-colors">
                       {link.label}
@@ -134,7 +164,7 @@ export default function Footer() {
           <p>© {new Date().getFullYear()} TechStore Kenya. All rights reserved.</p>
           <div className="flex items-center gap-3 flex-wrap justify-center">
             <span className="text-gray-500">Secure payments:</span>
-            {["Visa", "M-Pesa", "PayPal", "Stripe", "Mastercard"].map((p) => (
+            {["Visa", "M-Pesa", "PayPal", "Stripe", "Mastercard"].map(p => (
               <span key={p} className="bg-gray-800 text-gray-300 text-[10px] font-bold px-2 py-1 rounded">{p}</span>
             ))}
           </div>
