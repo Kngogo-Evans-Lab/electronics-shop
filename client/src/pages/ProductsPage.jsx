@@ -4,89 +4,17 @@ import { useApp } from "../context/AppContext";
 import { products, CATEGORIES, BRANDS } from "../data/products";
 import ProductCard from "../components/ProductCard";
 
-const API = 'https://electronics-shop-api-id3m.onrender.com';
-
 const SORT_OPTIONS = [
-  { value: "default", label: "Featured" },
-  { value: "price-asc", label: "Price: Low to High" },
+  { value: "default",    label: "Featured" },
+  { value: "price-asc",  label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
-  { value: "rating", label: "Highest Rated" },
-  { value: "newest", label: "Newest First" },
-  { value: "popular", label: "Most Popular" },
+  { value: "rating",     label: "Highest Rated" },
+  { value: "newest",     label: "Newest First" },
+  { value: "popular",    label: "Most Popular" },
 ];
 
-function SkeletonCard() {
+function Sidebar({ filters, setFilter, selectedBrands, toggleBrand, resetAll }) {
   return (
-    <div className="bg-white rounded-xl animate-pulse">
-      <div className="h-48 bg-gray-200 rounded-t-xl" />
-      <div className="p-3 space-y-2">
-        <div className="h-3 bg-gray-200 rounded w-1/4" />
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
-        <div className="h-3 bg-gray-200 rounded w-1/2" />
-        <div className="h-8 bg-gray-200 rounded" />
-      </div>
-    </div>
-  );
-}
-
-export default function ProductsPage() {
-  const { searchQuery, filters, dispatch } = useApp();
-  const [viewMode, setViewMode] = useState("grid");
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [selectedBrands, setSelectedBrands] = useState([]);
-
-  const filtered = useMemo(() => {
-    let result = [...products];
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (p) => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
-      );
-    }
-
-    if (filters.category !== "all") {
-      result = result.filter((p) => p.category === filters.category);
-    }
-
-    if (selectedBrands.length > 0) {
-      result = result.filter((p) => selectedBrands.includes(p.brand));
-    }
-
-    result = result.filter(
-      (p) => p.price >= filters.minPrice && p.price <= (filters.maxPrice || Infinity)
-    );
-
-    if (filters.rating > 0) {
-      result = result.filter((p) => p.rating >= filters.rating);
-    }
-
-    switch (filters.sort) {
-      case "price-asc": result.sort((a, b) => a.price - b.price); break;
-      case "price-desc": result.sort((a, b) => b.price - a.price); break;
-      case "rating": result.sort((a, b) => b.rating - a.rating); break;
-      case "popular": result.sort((a, b) => b.sold - a.sold); break;
-      case "newest": result.sort((a, b) => b.id - a.id); break;
-      default: break;
-    }
-
-    return result;
-  }, [searchQuery, filters, selectedBrands]);
-
-  const setFilter = (key, value) => dispatch({ type: "SET_FILTER", filter: { [key]: value } });
-
-  const toggleBrand = (brand) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-    );
-  };
-
-  const resetAll = () => {
-    dispatch({ type: "RESET_FILTERS" });
-    setSelectedBrands([]);
-  };
-
-  const Sidebar = () => (
     <div className="space-y-6">
       {/* Category */}
       <div>
@@ -114,12 +42,12 @@ export default function ProductsPage() {
         <h3 className="font-bold text-gray-900 text-sm mb-3 uppercase tracking-wide">Price Range</h3>
         <div className="space-y-1">
           {[
-            { label: "All Prices", min: 0, max: Infinity },
-            { label: "Under $100", min: 0, max: 100 },
-            { label: "$100 – $500", min: 100, max: 500 },
-            { label: "$500 – $1,000", min: 500, max: 1000 },
+            { label: "All Prices",      min: 0,    max: Infinity },
+            { label: "Under $100",      min: 0,    max: 100 },
+            { label: "$100 – $500",     min: 100,  max: 500 },
+            { label: "$500 – $1,000",   min: 500,  max: 1000 },
             { label: "$1,000 – $2,000", min: 1000, max: 2000 },
-            { label: "Over $2,000", min: 2000, max: Infinity },
+            { label: "Over $2,000",     min: 2000, max: Infinity },
           ].map((range) => {
             const active = filters.minPrice === range.min && filters.maxPrice === range.max;
             return (
@@ -168,10 +96,7 @@ export default function ProductsPage() {
               }`}
             >
               {r === 0 ? "All Ratings" : (
-                <>
-                  <span>{"★".repeat(Math.floor(r))}</span>
-                  <span>& above ({r}+)</span>
-                </>
+                <><span>{"★".repeat(Math.floor(r))}</span><span>& above ({r}+)</span></>
               )}
             </button>
           ))}
@@ -183,35 +108,75 @@ export default function ProductsPage() {
       </button>
     </div>
   );
+}
+
+export default function ProductsPage() {
+  const { searchQuery, filters, dispatch, addToCart } = useApp();
+  const [viewMode, setViewMode] = useState("grid");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [selectedBrands, setSelectedBrands] = useState([]);
+
+  const filtered = useMemo(() => {
+    let result = [...products];
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
+      );
+    }
+
+    if (filters.category !== "all") {
+      result = result.filter((p) => p.category === filters.category);
+    }
+
+    if (selectedBrands.length > 0) {
+      result = result.filter((p) => selectedBrands.includes(p.brand));
+    }
+
+    result = result.filter(
+      (p) => p.price >= filters.minPrice && p.price <= (filters.maxPrice || Infinity)
+    );
+
+    if (filters.rating > 0) {
+      result = result.filter((p) => p.rating >= filters.rating);
+    }
+
+    switch (filters.sort) {
+      case "price-asc":  result.sort((a, b) => a.price - b.price); break;
+      case "price-desc": result.sort((a, b) => b.price - a.price); break;
+      case "rating":     result.sort((a, b) => b.rating - a.rating); break;
+      case "popular":    result.sort((a, b) => b.sold - a.sold); break;
+      case "newest":     result.sort((a, b) => b.id - a.id); break;
+      default: break;
+    }
+
+    return result;
+  }, [searchQuery, filters, selectedBrands]);
+
+  const setFilter = (key, value) => dispatch({ type: "SET_FILTER", filter: { [key]: value } });
+
+  const toggleBrand = (brand) => {
+    setSelectedBrands((prev) =>
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+    );
+  };
+
+  const resetAll = () => {
+    dispatch({ type: "RESET_FILTERS" });
+    setSelectedBrands([]);
+  };
+
+  const sidebarProps = { filters, setFilter, selectedBrands, toggleBrand, resetAll };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">
-            {searchQuery ? `Results for "${searchQuery}"` : filters.category === "all" ? "All Products" : filters.category}
-          </h1>
-          <p className="text-sm text-gray-500">{filtered.length} products found</p>
-        </div>
+    <div className="w-full px-3 sm:px-6 lg:px-8 pt-4 pb-6">
+      <div className="flex gap-5">
 
-        {/* Mobile filter button */}
-        <button
-          onClick={() => setMobileSidebarOpen(true)}
-          className="lg:hidden flex items-center gap-2 border border-gray-300 px-3 py-2 rounded-lg text-sm text-gray-600"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-          </svg>
-          Filters
-        </button>
-      </div>
-
-      <div className="flex gap-6">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-56 shrink-0">
+        <aside className="hidden lg:block w-52 shrink-0">
           <div className="bg-white rounded-xl border border-gray-100 p-4 sticky top-24">
-            <Sidebar />
+            <Sidebar {...sidebarProps} />
           </div>
         </aside>
 
@@ -228,16 +193,39 @@ export default function ProductsPage() {
                   </svg>
                 </button>
               </div>
-              <Sidebar />
+              <Sidebar {...sidebarProps} />
             </div>
           </div>
         )}
 
         {/* Main content */}
-        <div className="flex-1">
-          {/* Sort + view controls */}
+        <div className="flex-1 min-w-0">
+
+          {/* Sort bar — product count + title live here */}
           <div className="flex items-center justify-between mb-4 bg-white rounded-xl border border-gray-100 p-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Title + count */}
+              <span className="text-sm font-semibold text-gray-800 hidden sm:block">
+                {searchQuery
+                  ? `"${searchQuery}"`
+                  : filters.category === "all" ? "All Products" : filters.category}
+              </span>
+              <span className="text-xs text-gray-400 hidden sm:block">
+                {filtered.length} of {products.length}
+              </span>
+              <div className="w-px h-4 bg-gray-200 hidden sm:block" />
+
+              {/* Mobile filter button — moved here, no more separate header */}
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="lg:hidden flex items-center gap-2 border border-gray-300 px-3 py-1.5 rounded-lg text-sm text-gray-600"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                </svg>
+                Filters
+              </button>
+
               <label className="text-sm text-gray-500">Sort by:</label>
               <select
                 value={filters.sort}
@@ -250,6 +238,7 @@ export default function ProductsPage() {
               </select>
             </div>
 
+            {/* View toggle */}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setViewMode("grid")}
@@ -281,7 +270,7 @@ export default function ProductsPage() {
               </button>
             </div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
               {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           ) : (
@@ -309,7 +298,7 @@ export default function ProductsPage() {
                         {p.originalPrice && <span className="text-sm text-gray-400 line-through">${p.originalPrice.toFixed(2)}</span>}
                       </div>
                       <button
-                        onClick={() => { const { addToCart } = require("../context/AppContext"); }}
+                        onClick={() => addToCart(p)}
                         className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
                       >
                         Add to Cart
