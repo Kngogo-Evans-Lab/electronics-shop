@@ -73,12 +73,6 @@ export default function ProductCard({ product, compact = false }) {
     toggleWishlist(product);
   };
 
-  const handleCheckout = () => {
-    if (!user) { setLoginPrompt("Please sign in to proceed to checkout."); return; }
-    addToCart(product);
-    navigate("/checkout");
-  };
-
   // ── Compact variant ───────────────────────────────────────────────────────
   if (compact) {
     return (
@@ -98,10 +92,9 @@ export default function ProductCard({ product, compact = false }) {
             </Link>
             <p className="text-xs font-bold text-gray-900">{toKsh(product.price)}</p>
             {product.originalPrice && <p className="text-[10px] text-gray-400 line-through">{toKsh(product.originalPrice)}</p>}
-            <div className="flex gap-1.5 mt-2">
-              <button onClick={() => addToCart(product)} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition">Cart</button>
-              <button onClick={handleCheckout} className="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-[10px] font-bold py-1.5 rounded-lg transition">Buy</button>
-            </div>
+            <button onClick={() => addToCart(product)} className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition">
+              Add to Cart
+            </button>
           </div>
         </div>
       </>
@@ -131,7 +124,7 @@ export default function ProductCard({ product, compact = false }) {
             )}
           </div>
 
-          {/* Free shipping — hide on smallest screens to save space */}
+          {/* Free shipping */}
           {product.freeShipping && (
             <span className="hidden sm:inline absolute bottom-2 left-2 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded">FREE SHIPPING</span>
           )}
@@ -147,7 +140,6 @@ export default function ProductCard({ product, compact = false }) {
 
         {/* Body */}
         <div className="p-1.5 sm:p-2.5 lg:p-3 flex flex-col flex-1">
-          {/* Brand — hide on very small to save space */}
           <p className="hidden sm:block text-[10px] text-blue-600 font-bold uppercase tracking-wide mb-0.5">{product.brand}</p>
 
           <Link to={`/product/${product.id}`}
@@ -155,7 +147,7 @@ export default function ProductCard({ product, compact = false }) {
             {product.title}
           </Link>
 
-          {/* Rating — hide on mobile to keep cards compact */}
+          {/* Rating */}
           <div className="hidden sm:flex items-center gap-1 mb-1.5 sm:mb-2">
             <div className="flex">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -175,17 +167,11 @@ export default function ProductCard({ product, compact = false }) {
             )}
           </div>
 
-          {/* Buttons — stacked on mobile, side-by-side on larger */}
-          <div className="flex flex-col sm:flex-row gap-1 sm:gap-1.5">
-            <button onClick={() => addToCart(product)}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[9px] sm:text-xs font-bold py-1.5 sm:py-2 rounded-md sm:rounded-lg transition-colors">
-              Add to Cart
-            </button>
-            <button onClick={handleCheckout}
-              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-[9px] sm:text-xs font-bold py-1.5 sm:py-2 rounded-md sm:rounded-lg transition-colors">
-              Checkout
-            </button>
-          </div>
+          {/* Add to Cart only */}
+          <button onClick={() => addToCart(product)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[9px] sm:text-xs font-bold py-1.5 sm:py-2 rounded-md sm:rounded-lg transition-colors">
+            Add to Cart
+          </button>
         </div>
       </div>
     </>
