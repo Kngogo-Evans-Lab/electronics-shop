@@ -73,7 +73,13 @@ export default function ProductCard({ product, compact = false }) {
     toggleWishlist(product);
   };
 
-  // ── Compact variant ───────────────────────────────────────────────────────
+  const handleBuyNow = () => {
+    if (!user) { setLoginPrompt("Please sign in to proceed to checkout."); return; }
+    addToCart(product);
+    navigate("/checkout");
+  };
+
+  // ── Compact variant (Flash Sale) ──────────────────────────────────────────
   if (compact) {
     return (
       <>
@@ -92,9 +98,14 @@ export default function ProductCard({ product, compact = false }) {
             </Link>
             <p className="text-xs font-bold text-gray-900">{toKsh(product.price)}</p>
             {product.originalPrice && <p className="text-[10px] text-gray-400 line-through">{toKsh(product.originalPrice)}</p>}
-            <button onClick={() => addToCart(product)} className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition">
-              Add to Cart
-            </button>
+            <div className="flex gap-1.5 mt-2">
+              <button onClick={() => addToCart(product)} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition">
+                Add to Cart
+              </button>
+              <button onClick={handleBuyNow} className="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-[10px] font-bold py-1.5 rounded-lg transition">
+                Buy Now
+              </button>
+            </div>
           </div>
         </div>
       </>
