@@ -73,13 +73,13 @@ export default function Navbar() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 6px 10px;
+          padding: 6px 12px;
           border-radius: 10px;
           color: #374151;
           text-decoration: none;
           transition: background 0.15s, color 0.15s;
           position: relative;
-          min-width: 52px;
+          min-width: 56px;
           background: none;
           border: none;
           cursor: pointer;
@@ -96,7 +96,7 @@ export default function Navbar() {
         .nav-badge {
           position: absolute;
           top: 3px;
-          right: 6px;
+          right: 8px;
           min-width: 17px;
           height: 17px;
           padding: 0 4px;
@@ -192,7 +192,7 @@ export default function Navbar() {
               </div>
             </form>
 
-            {/* Mobile search toggle */}
+            {/* Mobile search toggle — MOBILE ONLY */}
             <button
               onClick={() => setMobileSearchOpen(o => !o)}
               className="sm:hidden flex flex-col items-center nav-icon-btn"
@@ -205,8 +205,8 @@ export default function Navbar() {
               <span className="nav-icon-label">Search</span>
             </button>
 
-            {/* ── Right action icons — ALL visible on mobile and desktop ── */}
-            <div className="flex items-center gap-0.5 ml-auto sm:ml-0 shrink-0">
+            {/* ── Right action icons ── */}
+            <div className="flex items-center gap-1 ml-auto sm:ml-0 shrink-0">
 
               {/* Wishlist */}
               <Link to="/wishlist" className="nav-icon-btn">
@@ -301,7 +301,7 @@ export default function Navbar() {
                       <span className="nav-icon-label">Account</span>
                     </Link>
                     {/* Desktop: text buttons */}
-                    <div className="hidden sm:flex items-center gap-2 pl-1">
+                    <div className="hidden sm:flex items-center gap-3 pl-3 border-l border-gray-200 ml-2">
                       <Link to="/auth"
                         className="text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors whitespace-nowrap px-2 py-1">
                         Sign in
