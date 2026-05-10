@@ -35,20 +35,140 @@ const KEYFRAMES = `
   animation: neonPulse 2s ease-in-out infinite;
   border: 2px solid #00f5ff;
 }
+
+/* ── MOBILE GLOBAL FIXES ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
 /* Full-width hero override */
 .hero-fullwidth {
-  width: 100vw;
+  width: 100%;
   position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
+  left: 0;
+  right: 0;
+  margin-left: 0;
+  margin-right: 0;
+  overflow: hidden;
 }
+
 .vantix-page {
   width: 100%;
   max-width: 100% !important;
   overflow-x: hidden;
 }
+
+/* Navbar spacer — accounts for fixed navbar heights:
+   mobile: 64px nav only (utility bar hidden, category bar hidden on mobile)
+   desktop: 36px utility + 64px nav + 44px category = 144px */
+.navbar-spacer {
+  height: 64px;
+}
+@media (min-width: 768px) {
+  .navbar-spacer { height: 144px; }
+}
+
+/* Flash sale grid — 2 cols on mobile, 4 on sm+ */
+.flash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .flash-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+}
+
+/* Featured products grid */
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .featured-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+}
+@media (min-width: 1024px) {
+  .featured-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1280px) {
+  .featured-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* Promo banners — 1 col mobile, 3 col sm+ */
+.promo-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 640px) {
+  .promo-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+}
+
+/* Trust section — 2 col mobile, 4 col sm+ */
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .trust-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+}
+
+/* Section padding */
+.section-pad {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+@media (min-width: 768px) {
+  .section-pad { padding-left: 48px; padding-right: 48px; }
+}
+@media (min-width: 1280px) {
+  .section-pad { padding-left: 80px; padding-right: 80px; }
+}
+
+/* Flash sale header flex — wrap on tiny screens */
+.flash-sale-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Hero text clamp */
+.hero-title {
+  font-size: clamp(20px, 5vw, 38px);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  letter-spacing: -0.8px;
+  margin-bottom: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+/* Hero paragraph */
+.hero-para {
+  font-size: clamp(12px, 3vw, 14px);
+  color: rgba(255,255,255,0.55);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  max-width: 420px;
+}
+
+/* Hero badge strip — wrap gracefully */
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 16px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+}
+
 @media (min-width: 1400px) {
   .products-wide { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
 }
@@ -108,8 +228,10 @@ function Countdown() {
     <div className="flex items-center gap-1">
       {[pad(time.h), pad(time.m), pad(time.s)].map((val, i) => (
         <span key={i} className="flex items-center gap-1">
-          <span className="bg-white text-red-600 font-bold text-lg px-2 py-0.5 rounded min-w-[2rem] text-center">{val}</span>
-          {i < 2 && <span className="text-white font-bold text-lg">:</span>}
+          <span className="bg-white text-red-600 font-bold text-sm sm:text-lg px-1.5 sm:px-2 py-0.5 rounded min-w-[1.8rem] sm:min-w-[2rem] text-center">
+            {val}
+          </span>
+          {i < 2 && <span className="text-white font-bold text-sm sm:text-lg">:</span>}
         </span>
       ))}
     </div>
@@ -254,7 +376,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="bg-gray-50 w-full overflow-x-hidden vantix-page">
+    <div className="bg-gray-50 vantix-page">
       <style>{KEYFRAMES}</style>
 
       <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} dispatch={dispatch} />
@@ -291,14 +413,14 @@ export default function HomePage() {
         zIndex: 200,
       }}>
         <div style={{
-          padding: "0 16px",
+          padding: "0 12px",
           height: 64,
           display: "flex",
           alignItems: "center",
-          gap: 14,
-          maxWidth: "100%",
+          gap: 10,
+          width: "100%",
         }}
-          className="md:px-12"
+          className="md:px-12 md:gap-14"
         >
           {/* Logo */}
           <Link to="/" style={{
@@ -545,13 +667,13 @@ export default function HomePage() {
                   {/* Mobile: profile icon + label */}
                   <Link
                     to="/auth"
-                    className="flex md:hidden"
                     style={{
                       flexDirection: "column", alignItems: "center",
                       padding: "6px 6px", color: "#374151",
                       textDecoration: "none", borderRadius: 8, minWidth: 44,
                       display: "flex",
                     }}
+                    className="md:hidden hover:bg-gray-100"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
@@ -646,8 +768,8 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Spacer to push content below the fixed navbar (64px tall) */}
-      <div style={{ height: 64 }} />
+      {/* Spacer — matches fixed navbar height per breakpoint */}
+      <div className="navbar-spacer" />
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section
@@ -661,6 +783,7 @@ export default function HomePage() {
           width: "100%",
         }}
       >
+        {/* Grid pattern */}
         <div style={{
           position: "absolute", inset: 0, opacity: 0.06,
           backgroundImage: "linear-gradient(#60a5fa 1px,transparent 1px),linear-gradient(90deg,#60a5fa 1px,transparent 1px)",
@@ -668,34 +791,23 @@ export default function HomePage() {
           pointerEvents: "none",
         }} />
 
-        <div style={{
-          width: "100%", maxWidth: 1400,
-          margin: "0 auto",
-          padding: "22px 20px 22px",
-          position: "relative", zIndex: 2,
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gap: 20,
-          alignItems: "center",
-        }}
-          className="lg:grid-cols-2 lg:px-12"
+        <div
+          className="section-pad lg:grid lg:grid-cols-2"
+          style={{
+            width: "100%", maxWidth: 1400,
+            margin: "0 auto",
+            paddingTop: 24, paddingBottom: 28,
+            position: "relative", zIndex: 2,
+            gap: 20,
+            alignItems: "center",
+          }}
         >
           <div>
-            <h1 style={{
-              fontSize: "clamp(22px, 3vw, 38px)",
-              fontWeight: 800, color: "#fff",
-              lineHeight: 1.15, letterSpacing: "-0.8px",
-              marginBottom: 8,
-              fontFamily: "system-ui,sans-serif",
-            }}>
+            <h1 className="hero-title">
               Next-Gen Quality Products.{" "}
               <span style={{ color: "#f5a623" }}>Best Prices.</span>
             </h1>
-            <p style={{
-              fontSize: "clamp(12px, 1.2vw, 14px)",
-              color: "rgba(255,255,255,0.55)",
-              lineHeight: 1.55, marginBottom: 16, maxWidth: 420,
-            }}>
+            <p className="hero-para">
               Premium phones, laptops, audio &amp; more — genuine products, fast delivery across Kenya.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
@@ -714,13 +826,14 @@ export default function HomePage() {
                 textDecoration: "none", transition: "background 0.15s",
               }}>View Deals →</Link>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 20px", fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
+            <div className="hero-badges">
               {["✅ Genuine Products", "🚚 Fast Delivery", "🔄 Easy Returns", "🔒 Secure Payment"].map(t => (
                 <span key={t}>{t}</span>
               ))}
             </div>
           </div>
 
+          {/* Desktop-only hero image panel */}
           <div className="hidden lg:flex" style={{ justifyContent: "center" }}>
             <div style={{
               background: "rgba(255,255,255,0.07)",
@@ -754,25 +867,26 @@ export default function HomePage() {
       </section>
 
       {/* ── Flash Sale ────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "28px 20px 0", width: "100%" }} className="md:px-12 xl:px-20">
-        <div className="bg-red-600 rounded-2xl overflow-hidden">
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "12px 20px", flexWrap: "wrap", gap: 8,
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 22 }}>⚡</span>
-                <span style={{ color: "#fff", fontWeight: 800, fontSize: 20 }}>Flash Sale</span>
-              </div>
-              <Countdown />
+      <section
+        className="section-pad"
+        style={{ paddingTop: 24, paddingBottom: 0, width: "100%" }}
+      >
+        <div style={{ borderRadius: 16, overflow: "hidden" }} className="bg-red-600">
+          {/* Header */}
+          <div className="flash-sale-header">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 20 }}>⚡</span>
+              <span style={{ color: "#fff", fontWeight: 800, fontSize: 18 }}>Flash Sale</span>
             </div>
+            <Countdown />
             <Link to="/products" style={{ color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
               View All →
             </Link>
           </div>
-          <div className="bg-gray-50 p-3 sm:p-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+
+          {/* Product grid */}
+          <div style={{ background: "#f9fafb", padding: "12px" }}>
+            <div className="flash-grid">
               {flashSaleProducts.map((p) => (
                 <ProductCard key={p.id} product={p} compact />
               ))}
@@ -782,15 +896,18 @@ export default function HomePage() {
       </section>
 
       {/* ── Featured Products ─────────────────────────────────────────────────── */}
-      <section style={{ padding: "28px 20px", width: "100%" }} className="md:px-12 xl:px-20">
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 20 }}>
+      <section
+        className="section-pad"
+        style={{ paddingTop: 24, paddingBottom: 24, width: "100%" }}
+      >
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
           <div>
-            <h2 style={{ fontSize: "clamp(18px,2vw,22px)", fontWeight: 800, color: "#111827" }}>Featured Products</h2>
-            <p style={{ fontSize: 13, color: "#6b7a99", marginTop: 2 }}>Handpicked top deals for you</p>
+            <h2 style={{ fontSize: "clamp(16px,4vw,22px)", fontWeight: 800, color: "#111827" }}>Featured Products</h2>
+            <p style={{ fontSize: 12, color: "#6b7a99", marginTop: 2 }}>Handpicked top deals for you</p>
           </div>
           <Link to="/products" style={{ color: "#1a3a8f", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>See All →</Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 products-wide">
+        <div className="featured-grid products-wide">
           {products.slice(0, 10).map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
@@ -798,43 +915,54 @@ export default function HomePage() {
       </section>
 
       {/* ── Promo Banners ─────────────────────────────────────────────────────── */}
-      <section style={{ padding: "0 20px 28px", width: "100%" }} className="md:px-12 xl:px-20">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <section
+        className="section-pad"
+        style={{ paddingBottom: 24, width: "100%" }}
+      >
+        <div className="promo-grid">
           {[
             { title: "Top Phones", subtitle: "Latest models", color: "from-blue-600 to-blue-400", emoji: "📱", link: "/products?category=phones" },
             { title: "Gaming Week", subtitle: "Up to 30% off", color: "from-gray-900 to-gray-700", emoji: "🕹️", link: "/products?category=gaming" },
             { title: "Audio Deals", subtitle: "Premium sound", color: "from-indigo-600 to-indigo-400", emoji: "🎧", link: "/products?category=audio" },
           ].map((b) => (
             <Link key={b.title} to={b.link}
-              className={`bg-gradient-to-r ${b.color} rounded-2xl p-6 text-white flex items-center justify-between hover:opacity-90 transition-opacity`}
+              className={`bg-gradient-to-r ${b.color} rounded-2xl p-5 sm:p-6 text-white flex items-center justify-between hover:opacity-90 transition-opacity`}
             >
               <div>
-                <p className="font-bold text-lg">{b.title}</p>
-                <p className="text-sm opacity-80">{b.subtitle}</p>
+                <p className="font-bold text-base sm:text-lg">{b.title}</p>
+                <p className="text-xs sm:text-sm opacity-80">{b.subtitle}</p>
                 <span className="inline-block mt-3 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition">
                   Shop Now →
                 </span>
               </div>
-              <span className="text-5xl">{b.emoji}</span>
+              <span style={{ fontSize: "clamp(32px, 8vw, 48px)" }}>{b.emoji}</span>
             </Link>
           ))}
         </div>
       </section>
 
       {/* ── Trust Section ─────────────────────────────────────────────────────── */}
-      <section style={{ padding: "0 20px 48px", width: "100%" }} className="md:px-12 xl:px-20">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <section
+        className="section-pad"
+        style={{ paddingBottom: 48, width: "100%" }}
+      >
+        <div className="trust-grid">
           {[
             { icon: "↩️", title: "Easy Returns", desc: "30-day return policy" },
             { icon: "🔒", title: "Secure Payment", desc: "100% protected" },
             { icon: "🎧", title: "24/7 Support", desc: "Always here to help" },
             { icon: "🚚", title: "Fast Delivery", desc: "Across all Kenya" },
           ].map((item) => (
-            <div key={item.title} className="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-              <span className="text-2xl">{item.icon}</span>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">{item.title}</p>
-                <p className="text-xs text-gray-500">{item.desc}</p>
+            <div key={item.title} style={{
+              background: "#fff", borderRadius: 12,
+              border: "1px solid #f0f1f5",
+              padding: "12px", display: "flex",
+              alignItems: "center", gap: 10,
+            }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{item.icon}</span>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontWeight: 600, color: "#1f2937", fontSize: 13 }}>{item.title}</p>
+                <p style={{ fontSize: 11, color: "#6b7280" }}>{item.desc}</p>
               </div>
             </div>
           ))}

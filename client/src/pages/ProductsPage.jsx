@@ -251,17 +251,20 @@ export default function ProductsPage() {
 
   return (
     <>
-      {/* ── Fixed Navbar — same as every other page ── */}
+      {/* ── Fixed Navbar ── */}
       <Navbar />
 
       {/*
-        Spacer: Navbar is fixed, so we push content down.
-        Navbar height:
-          - Mobile: ~112px (top bar hidden + main nav 64px + mobile category row ~48px)
-          - Desktop (sm+): ~36px top bar + 64px nav + ~44px category bar = ~144px
-        We use pt values that match these heights.
+        Spacer: matches fixed Navbar height:
+        - Mobile: 64px (just the nav bar; utility bar & category bar hidden)
+        - sm (640px+): still 64px
+        - md (768px+): 36px utility + 64px nav + 44px category = 144px
+        Using pt-16 (64px) mobile, pt-36 (144px) md+
       */}
-      <div className="pt-28 sm:pt-36 w-full px-3 sm:px-6 lg:px-8 pb-8">
+      <div
+        style={{ boxSizing: "border-box", width: "100%", overflowX: "hidden" }}
+        className="pt-16 md:pt-36 px-3 sm:px-6 lg:px-8 pb-8"
+      >
         <div className="flex gap-5">
 
           {/* Desktop Sidebar */}
@@ -272,7 +275,7 @@ export default function ProductsPage() {
             </div>
           </aside>
 
-          {/* Mobile Sidebar */}
+          {/* Mobile Sidebar drawer */}
           {mobileSidebarOpen && (
             <div className="fixed inset-0 z-50 lg:hidden">
               <div className="absolute inset-0 bg-black/50" onClick={() => setMobileSidebarOpen(false)} />
@@ -292,10 +295,10 @@ export default function ProductsPage() {
           )}
 
           {/* Main content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full" style={{ minWidth: 0, overflow: "hidden" }}>
 
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-3 mb-4 bg-white rounded-xl border border-gray-100 p-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 bg-white rounded-xl border border-gray-100 p-2 sm:p-3">
 
               {/* Mobile filter btn */}
               <button onClick={() => setMobileSidebarOpen(true)}
@@ -306,15 +309,19 @@ export default function ProductsPage() {
                 Filters
               </button>
 
-              {/* Live search */}
-              <div className="relative flex-1 min-w-[140px]">
+              {/* Live search — takes remaining space */}
+              <div className="relative flex-1 min-w-0" style={{ minWidth: 100 }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
                 </svg>
-                <input type="text" value={localSearch} onChange={e => setLocalSearch(e.target.value)}
+                <input
+                  type="text"
+                  value={localSearch}
+                  onChange={e => setLocalSearch(e.target.value)}
                   placeholder="Search products…"
-                  className="w-full pl-8 pr-8 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full pl-8 pr-7 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
                 {localSearch && (
                   <button onClick={() => setLocalSearch("")}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
@@ -322,15 +329,19 @@ export default function ProductsPage() {
               </div>
 
               {/* Sort */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <label className="text-xs text-gray-500">Sort:</label>
-                <select value={filters.sort} onChange={e => setFilter("sort", e.target.value)}
-                  className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <div className="flex items-center gap-1 shrink-0">
+                <label className="text-xs text-gray-500 hidden sm:block">Sort:</label>
+                <select
+                  value={filters.sort}
+                  onChange={e => setFilter("sort", e.target.value)}
+                  className="text-xs sm:text-sm border border-gray-200 rounded-lg px-1.5 sm:px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ maxWidth: 130 }}
+                >
                   {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
 
-              {/* Count */}
+              {/* Count — hidden on smallest screens to save space */}
               <span className="text-xs text-gray-400 hidden sm:block shrink-0">
                 {filtered.length} product{filtered.length !== 1 ? "s" : ""}
               </span>
@@ -364,7 +375,14 @@ export default function ProductsPage() {
                 </div>
 
               ) : viewMode === "grid" ? (
-                <div className="relative z-10 grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+                /*
+                  Mobile: 2 columns
+                  sm (640px+): 3 columns (sidebar absent so more room)
+                  lg (1024px+): 4 columns (sidebar present)
+                  xl (1280px+): 5 columns
+                  Note: grid-cols-4 on mobile was the original bug — caused tiny unreadable cards.
+                */
+                <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
                   {filtered.map(p => <ProductCard key={p.id} product={p} />)}
                 </div>
 
