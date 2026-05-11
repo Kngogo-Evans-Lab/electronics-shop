@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
-import { products, mockReviews } from "../data/products";
+import { products } from "../data/products";
 import { toKsh } from "../components/ProductCard";
 
 /* ─── Star display ─── */
@@ -111,7 +111,8 @@ export default function ProductDetailPage() {
       if (found) {
         setProduct(found);
         setSelectedVariant(found.variants?.[0] || "");
-        setReviews(mockReviews[found.id] || []);
+        // Reviews start empty — only real verified-buyer submissions appear
+        setReviews([]);
       }
       setLoading(false);
     }, 400);
@@ -156,13 +157,19 @@ export default function ProductDetailPage() {
   const allOtherProducts = products.filter((p) => p.id !== product.id);
   const avgRating = reviews.length
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-    : product.rating;
+    : null;
   const inCart = cart.find((i) => i.id === product.id);
 
-  // Review permissions — only buyers who actually ordered this product
-  const hasPurchased = user && orders
-    ? orders.some((o) => o.items?.some((i) => i.id === product.id))
-    : false;
+  // Review permissions — only the logged-in user who actually ordered this product.
+  // Orders saved by AppContext include a userId field (see AppContext fix).
+  const hasPurchased = !!(
+    user &&
+    orders?.some(
+      (o) =>
+        o.userId === user.id &&
+        o.items?.some((i) => i.id === product.id)
+    )
+  );
   const alreadyReviewed = user && reviews.some((r) => r.userId === user.id);
 
   const handleAddToCart = () => addToCart({ ...product, variant: selectedVariant, qty });
@@ -228,7 +235,7 @@ export default function ProductDetailPage() {
               <div className="relative rounded-xl overflow-hidden bg-gray-50 border border-gray-100 mb-3"
                 style={{ aspectRatio: "1/1" }}>
                 <img src={product.images[activeImage]} alt={product.title}
-                  className="w-full h-full object-contain p-4" />
+  className="w-full h-full object-cover" />
                 {discount > 0 && (
                   <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-md">
                     -{discount}% OFF
@@ -246,7 +253,7 @@ export default function ProductDetailPage() {
                           ? "border-blue-500"
                           : "border-gray-200 opacity-60 hover:opacity-100"
                       }`}>
-                      <img src={img} alt="" className="w-full h-full object-contain p-1" />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -268,14 +275,16 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* Rating */}
-              <div className="flex items-center gap-2">
-                <StarRating rating={Number(avgRating)} />
-                <span className="text-sm font-bold text-gray-700">{avgRating}</span>
-                <span className="text-xs text-gray-400">
-                  ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
-                </span>
-              </div>
+              {/* Rating — only shown when real reviews exist */}
+              {reviews.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <StarRating rating={Number(avgRating)} />
+                  <span className="text-sm font-bold text-gray-700">{avgRating}</span>
+                  <span className="text-xs text-gray-400">
+                    ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+                  </span>
+                </div>
+              )}
 
               {/* Price */}
               <div className="flex items-baseline flex-wrap gap-2 pb-4 border-b border-gray-100">
@@ -363,8 +372,6 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-
-
             </div>
           </div>
         </div>
@@ -432,7 +439,7 @@ export default function ProductDetailPage() {
             {/* Reviews */}
             {activeTab === "reviews" && (
               <div>
-                {/* Summary bar */}
+                {/* Summary bar — only shown when real reviews exist */}
                 {reviews.length > 0 && (
                   <div className="flex items-center gap-6 mb-5 pb-5 border-b border-gray-100">
                     <div className="text-center shrink-0">
@@ -460,7 +467,11 @@ export default function ProductDetailPage() {
 
                 {/* Review cards */}
                 {reviews.length === 0 ? (
-                  <p className="text-center text-gray-400 py-6 text-sm">No verified reviews yet.</p>
+                  <div className="text-center py-10">
+                    <p className="text-3xl mb-2">💬</p>
+                    <p className="text-gray-500 font-semibold text-sm">No reviews yet</p>
+                    <p className="text-gray-400 text-xs mt-1">Be the first verified buyer to leave a review.</p>
+                  </div>
                 ) : (
                   <div className="space-y-3 mb-6">
                     {reviews.map((r) => (
@@ -562,6 +573,7 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             )}
+
             {/* Recommended tab */}
             {activeTab === "recommended" && (
               <div>

@@ -1,6 +1,6 @@
 // FILE: src/pages/ProductsPage.jsx
-import { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { products, CATEGORIES, BRANDS } from "../data/products";
 import ProductCard, { toKsh, formatKES, USD_TO_KSH } from "../components/ProductCard";
@@ -221,6 +221,16 @@ export default function ProductsPage() {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [localSearch, setLocalSearch] = useState("");
 
+  // ── FIX: read ?search= and ?category= from URL on every navigation ──
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get("search") || "";
+    const cat = params.get("category") || "";
+    setLocalSearch(q);
+    if (cat) dispatch({ type: "SET_FILTER", filter: { category: cat } });
+  }, [location.search]);
+
   const filtered = useMemo(() => {
     let result = [...products];
     if (localSearch.trim()) {
@@ -247,20 +257,17 @@ export default function ProductsPage() {
   const setFilter = (key, value) => dispatch({ type: "SET_FILTER", filter: { [key]: value } });
   const setPriceRange = (min, max) => dispatch({ type: "SET_FILTER", filter: { minPrice: min, maxPrice: max } });
   const toggleBrand = (b) => setSelectedBrands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]);
-  const resetAll = () => { dispatch({ type: "RESET_FILTERS" }); setSelectedBrands([]); setLocalSearch(""); };
+  const resetAll = () => {
+    dispatch({ type: "RESET_FILTERS" });
+    setSelectedBrands([]);
+    setLocalSearch("");
+  };
 
   return (
     <>
       {/* ── Fixed Navbar ── */}
       <Navbar />
 
-      {/*
-        Spacer: matches fixed Navbar height:
-        - Mobile: 64px (just the nav bar; utility bar & category bar hidden)
-        - sm (640px+): still 64px
-        - md (768px+): 36px utility + 64px nav + 44px category = 144px
-        Using pt-16 (64px) mobile, pt-36 (144px) md+
-      */}
       <div
         style={{ boxSizing: "border-box", width: "100%", overflowX: "hidden" }}
         className="pt-16 md:pt-36 px-3 sm:px-6 lg:px-8 pb-8"
@@ -309,7 +316,7 @@ export default function ProductsPage() {
                 Filters
               </button>
 
-              {/* Live search — takes remaining space */}
+              {/* Live search */}
               <div className="relative flex-1 min-w-0" style={{ minWidth: 100 }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none">
@@ -341,7 +348,7 @@ export default function ProductsPage() {
                 </select>
               </div>
 
-              {/* Count — hidden on smallest screens to save space */}
+              {/* Count */}
               <span className="text-xs text-gray-400 hidden sm:block shrink-0">
                 {filtered.length} product{filtered.length !== 1 ? "s" : ""}
               </span>
@@ -375,13 +382,6 @@ export default function ProductsPage() {
                 </div>
 
               ) : viewMode === "grid" ? (
-                /*
-                  Mobile: 2 columns
-                  sm (640px+): 3 columns (sidebar absent so more room)
-                  lg (1024px+): 4 columns (sidebar present)
-                  xl (1280px+): 5 columns
-                  Note: grid-cols-4 on mobile was the original bug — caused tiny unreadable cards.
-                */
                 <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
                   {filtered.map(p => <ProductCard key={p.id} product={p} />)}
                 </div>

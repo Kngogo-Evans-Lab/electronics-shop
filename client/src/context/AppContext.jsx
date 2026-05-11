@@ -16,7 +16,6 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
-    // ── CART ──────────────────────────────────────────────────────────────────
     case "CART_ADD": {
       const exists = state.cart.find((i) => i.id === action.item.id && i.variant === action.item.variant);
       const cart = exists
@@ -39,7 +38,6 @@ function reducer(state, action) {
     case "CART_CLEAR":
       return { ...state, cart: [] };
 
-    // ── WISHLIST ──────────────────────────────────────────────────────────────
     case "WISHLIST_TOGGLE": {
       const inList = state.wishlist.find((i) => i.id === action.item.id);
       const wishlist = inList
@@ -57,7 +55,6 @@ function reducer(state, action) {
       return { ...state, cart, wishlist: state.wishlist.filter((i) => i.id !== action.id) };
     }
 
-    // ── AUTH ──────────────────────────────────────────────────────────────────
     case "AUTH_LOGIN":
       return { ...state, user: action.user };
     case "AUTH_LOGOUT":
@@ -65,10 +62,10 @@ function reducer(state, action) {
     case "AUTH_UPDATE":
       return { ...state, user: { ...state.user, ...action.data } };
 
-    // ── ORDERS ────────────────────────────────────────────────────────────────
     case "ORDER_PLACE": {
       const order = {
         id: `ORD-${Date.now()}`,
+        userId: action.userId,           // ✅ ties order to the buyer
         items: state.cart,
         total: action.total,
         shipping: action.shipping,
@@ -80,13 +77,11 @@ function reducer(state, action) {
       return { ...state, orders: [order, ...state.orders], cart: [] };
     }
 
-    // ── TOAST ─────────────────────────────────────────────────────────────────
     case "TOAST_ADD":
       return { ...state, toasts: [...state.toasts, action.toast] };
     case "TOAST_REMOVE":
       return { ...state, toasts: state.toasts.filter((t) => t.id !== action.id) };
 
-    // ── FILTERS ───────────────────────────────────────────────────────────────
     case "SET_SEARCH":
       return { ...state, searchQuery: action.query };
     case "SET_FILTER":
@@ -102,7 +97,6 @@ function reducer(state, action) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Persist to localStorage
   useEffect(() => { localStorage.setItem("cart", JSON.stringify(state.cart)); }, [state.cart]);
   useEffect(() => { localStorage.setItem("wishlist", JSON.stringify(state.wishlist)); }, [state.wishlist]);
   useEffect(() => { localStorage.setItem("orders", JSON.stringify(state.orders)); }, [state.orders]);
@@ -111,14 +105,12 @@ export function AppProvider({ children }) {
     else localStorage.removeItem("user");
   }, [state.user]);
 
-  // Toast helper
   const toast = useCallback((message, type = "success") => {
     const id = Date.now() + Math.random();
     dispatch({ type: "TOAST_ADD", toast: { id, message, type } });
     setTimeout(() => dispatch({ type: "TOAST_REMOVE", id }), 4000);
   }, []);
 
-  // Cart helpers
   const addToCart = useCallback((item) => {
     dispatch({ type: "CART_ADD", item });
     toast(`"${item.title}" added to cart!`);
@@ -134,7 +126,6 @@ export function AppProvider({ children }) {
 
   const clearCart = useCallback(() => dispatch({ type: "CART_CLEAR" }), []);
 
-  // Wishlist helpers
   const toggleWishlist = useCallback((item) => {
     const inList = state.wishlist.find((i) => i.id === item.id);
     dispatch({ type: "WISHLIST_TOGGLE", item });
@@ -148,7 +139,6 @@ export function AppProvider({ children }) {
     toast("Item moved to cart!");
   }, [toast]);
 
-  // Auth helpers
   const login = useCallback((user) => {
     dispatch({ type: "AUTH_LOGIN", user });
     toast(`Welcome back, ${user.name}!`);
@@ -164,12 +154,11 @@ export function AppProvider({ children }) {
     toast("Profile updated successfully!");
   }, [toast]);
 
-  // Order helpers
+  // ✅ passes current user's id so the order is tied to the buyer
   const placeOrder = useCallback((total, shipping, payment) => {
-    dispatch({ type: "ORDER_PLACE", total, shipping, payment });
-  }, []);
+    dispatch({ type: "ORDER_PLACE", total, shipping, payment, userId: state.user?.id });
+  }, [state.user]);
 
-  // Derived
   const cartTotal = state.cart.reduce((sum, i) => sum + i.price * i.qty, 0);
   const cartCount = state.cart.reduce((sum, i) => sum + i.qty, 0);
 

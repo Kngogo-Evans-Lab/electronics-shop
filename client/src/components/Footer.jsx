@@ -24,19 +24,6 @@ const InstagramIcon = () => (<svg viewBox="0 0 24 24" fill="none" stroke="curren
 const TikTokIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.78a4.85 4.85 0 01-1.01-.09z" /></svg>);
 const XIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>);
 
-const MPesaLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 70" width="80" height="28">
-    <rect x="0" y="0" width="220" height="70" rx="6" fill="white"/>
-    <ellipse cx="28" cy="18" rx="7" ry="11" fill="#4caf50" transform="rotate(-20 28 18)"/>
-    <ellipse cx="40" cy="26" rx="7" ry="11" fill="#4caf50" transform="rotate(70 40 26)"/>
-    <ellipse cx="34" cy="40" rx="7" ry="11" fill="#e53935" transform="rotate(160 34 40)"/>
-    <ellipse cx="18" cy="32" rx="7" ry="11" fill="#e53935" transform="rotate(250 18 32)"/>
-    <circle cx="29" cy="29" r="6" fill="white"/>
-    <text x="56" y="30" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="20" fill="#4caf50" letterSpacing="-0.5">M-PESA</text>
-    <text x="57" y="46" fontFamily="Arial, sans-serif" fontWeight="600" fontSize="10" fill="#757575" letterSpacing="0.3">by Safaricom</text>
-  </svg>
-);
-
 const SOCIAL_LINKS = [
   { label: "Facebook",  href: "https://facebook.com",  icon: <FacebookIcon /> },
   { label: "Instagram", href: "https://instagram.com", icon: <InstagramIcon /> },
@@ -120,7 +107,6 @@ export default function Footer() {
       {/* Main body */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px 24px" }}>
 
-        {/* MOBILE: stack brand + 3 cols in 2x2 grid. DESKTOP: single row */}
         <div style={{ display: "grid", gap: 28, gridTemplateColumns: "1fr" }}>
 
           {/* Brand */}
@@ -147,7 +133,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Nav links — 3 cols on mobile, inline on desktop */}
+          {/* Nav links */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
             {NAV_SECTIONS.map(section => (
               <div key={section.title}>
@@ -173,12 +159,13 @@ export default function Footer() {
         {/* Divider */}
         <div style={{ margin: "24px 0 18px", height: 1, background: "linear-gradient(90deg, transparent, #1e3a8a 30%, #f5a623 50%, #1e3a8a 70%, transparent)" }} />
 
-        {/* Bottom bar */}
-        
-            <span style={{ fontSize: 11, color: "#475569" }}>© {new Date().getFullYear()} <strong style={{ color: "#94a3b8" }}>Vantix Kenya</strong>. All rights reserved.</span>
-            <span style={{ fontSize: 11, color: "#475569" }}>🇰🇪 WELCOME</span>
-          </div>
-      
+        {/* Bottom bar — centered */}
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "#475569" }}>© {new Date().getFullYear()} <strong style={{ color: "#94a3b8" }}>Vantix Kenya</strong>. All rights reserved.</span>
+          <span style={{ fontSize: 11, color: "#475569" }}>🇰🇪 WELCOME</span>
+        </div>
+
+      </div>
     </footer>
   );
 }

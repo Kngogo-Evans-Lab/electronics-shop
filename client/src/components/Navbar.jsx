@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { CATEGORIES } from "../data/products";
 
-// ── VANTIX Logo (hexagon style from HomePage) ─────────────────────────────────
 export function VantixKenyaLogo({ size = 36 }) {
   return (
     <div style={{
@@ -24,8 +23,8 @@ export function VantixKenyaLogo({ size = 36 }) {
 }
 
 export default function Navbar() {
-  const { cartCount, wishlist, user, logout, dispatch, searchQuery } = useApp();
-  const [searchVal, setSearchVal] = useState(searchQuery || "");
+  const { cartCount, wishlist, user, logout, dispatch } = useApp();
+  const [searchVal, setSearchVal] = useState("");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
@@ -44,20 +43,26 @@ export default function Navbar() {
   const handleSearchChange = (e) => {
     const val = e.target.value;
     setSearchVal(val);
-    dispatch({ type: "SET_SEARCH", query: val });
-    if (val.trim()) navigate("/products");
+    if (val.trim()) {
+      navigate(`/products?search=${encodeURIComponent(val.trim())}`);
+    } else {
+      navigate("/products");
+    }
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    dispatch({ type: "SET_SEARCH", query: searchVal });
-    if (searchVal.trim()) navigate("/products");
+    if (searchVal.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchVal.trim())}`);
+    } else {
+      navigate("/products");
+    }
     setMobileSearchOpen(false);
   };
 
   const handleClear = () => {
     setSearchVal("");
-    dispatch({ type: "SET_SEARCH", query: "" });
+    navigate("/products");
   };
 
   return (
@@ -109,6 +114,11 @@ export default function Navbar() {
           align-items: center;
           justify-content: center;
           line-height: 1;
+        }
+        /* Hide mobile search btn on desktop — !important beats .nav-icon-btn display:flex */
+        #mobile-search-btn { display: none !important; }
+        @media (max-width: 639px) {
+          #mobile-search-btn { display: flex !important; }
         }
         .mobile-search-bar {
           position: fixed;
@@ -192,10 +202,11 @@ export default function Navbar() {
               </div>
             </form>
 
-            {/* Mobile search toggle — MOBILE ONLY */}
+            {/* Mobile search toggle — hidden on desktop via #mobile-search-btn CSS */}
             <button
+              id="mobile-search-btn"
               onClick={() => setMobileSearchOpen(o => !o)}
-              className="sm:hidden flex flex-col items-center nav-icon-btn"
+              className="nav-icon-btn"
               style={{ minWidth: 40, padding: "6px 8px" }}
               aria-label="Search"
             >
@@ -292,7 +303,6 @@ export default function Navbar() {
                   </>
                 ) : (
                   <>
-                    {/* Mobile: icon + label */}
                     <Link to="/auth" className="nav-icon-btn sm:hidden">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                         <path strokeLinecap="round" strokeLinejoin="round"
@@ -300,7 +310,6 @@ export default function Navbar() {
                       </svg>
                       <span className="nav-icon-label">Account</span>
                     </Link>
-                    {/* Desktop: text buttons */}
                     <div className="hidden sm:flex items-center gap-3 pl-3 border-l border-gray-200 ml-2">
                       <Link to="/auth"
                         className="text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors whitespace-nowrap px-2 py-1">
