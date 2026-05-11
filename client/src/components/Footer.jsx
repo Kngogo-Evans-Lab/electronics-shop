@@ -2,105 +2,46 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-// ── Same logo as the one in HomePage navbar ───────────────────────────────────
 function VantixLogo() {
   return (
     <Link to="/" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
-      <div style={{
-        width: 38, height: 38,
-        background: "linear-gradient(140deg,#1a3a8f,#08112a)",
-        borderRadius: 9,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0,
-      }}>
+      <div style={{ width: 38, height: 38, background: "linear-gradient(140deg,#1a3a8f,#08112a)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 2L18 7V13L10 18L2 13V7L10 2Z"
-            stroke="#f5a623" strokeWidth="1.6" fill="rgba(245,166,35,0.12)" />
+          <path d="M10 2L18 7V13L10 18L2 13V7L10 2Z" stroke="#f5a623" strokeWidth="1.6" fill="rgba(245,166,35,0.12)" />
           <circle cx="10" cy="10" r="3" fill="#f5a623" />
         </svg>
       </div>
       <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-        <span style={{ fontWeight: 900, fontSize: 19, color: "#fff", letterSpacing: "-0.3px", fontFamily: "system-ui,sans-serif" }}>
-          VANTIX<span style={{ color: "#f5a623" }}>.</span>
-        </span>
-        <span style={{ fontSize: 9, fontWeight: 700, color: "#f5a623", letterSpacing: "4px", textTransform: "uppercase", marginTop: 2 }}>
-          SHOP254
-        </span>
+        <span style={{ fontWeight: 900, fontSize: 19, color: "#fff", letterSpacing: "-0.3px", fontFamily: "system-ui,sans-serif" }}>VANTIX<span style={{ color: "#f5a623" }}>.</span></span>
+        <span style={{ fontSize: 9, fontWeight: 700, color: "#f5a623", letterSpacing: "4px", textTransform: "uppercase", marginTop: 2 }}>SHOP254</span>
       </div>
     </Link>
   );
 }
 
-// ── Social icons ──────────────────────────────────────────────────────────────
-const FacebookIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-    <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-  </svg>
-);
-const InstagramIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-    <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-  </svg>
-);
-const TikTokIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.78a4.85 4.85 0 01-1.01-.09z" />
-  </svg>
-);
-const XIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
-  </svg>
-);
+const FacebookIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" /></svg>);
+const InstagramIcon = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>);
+const TikTokIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.78a4.85 4.85 0 01-1.01-.09z" /></svg>);
+const XIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>);
 
-// ── Real M-Pesa logo — accurate Safaricom green brand recreation ──────────────
-// Official brand: green #4caf50 / #388e3c, bold M-PESA wordmark, Safaricom petal
 const MPesaLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 70" width="90" height="30">
-    {/* White background card */}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 70" width="80" height="28">
     <rect x="0" y="0" width="220" height="70" rx="6" fill="white"/>
-
-    {/* Safaricom petal/flower symbol — 4 rounded petals in green & red */}
-    {/* Top petal - green */}
     <ellipse cx="28" cy="18" rx="7" ry="11" fill="#4caf50" transform="rotate(-20 28 18)"/>
-    {/* Right petal - green */}
     <ellipse cx="40" cy="26" rx="7" ry="11" fill="#4caf50" transform="rotate(70 40 26)"/>
-    {/* Bottom petal - red */}
     <ellipse cx="34" cy="40" rx="7" ry="11" fill="#e53935" transform="rotate(160 34 40)"/>
-    {/* Left petal - red */}
     <ellipse cx="18" cy="32" rx="7" ry="11" fill="#e53935" transform="rotate(250 18 32)"/>
-    {/* White center circle to unify petals */}
     <circle cx="29" cy="29" r="6" fill="white"/>
-
-    {/* M-PESA green wordmark */}
-    <text
-      x="56" y="30"
-      fontFamily="Arial Black, Arial, sans-serif"
-      fontWeight="900"
-      fontSize="20"
-      fill="#4caf50"
-      letterSpacing="-0.5"
-    >M-PESA</text>
-
-    {/* "by Safaricom" small tagline */}
-    <text
-      x="57" y="46"
-      fontFamily="Arial, sans-serif"
-      fontWeight="600"
-      fontSize="10"
-      fill="#757575"
-      letterSpacing="0.3"
-    >by Safaricom</text>
+    <text x="56" y="30" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="20" fill="#4caf50" letterSpacing="-0.5">M-PESA</text>
+    <text x="57" y="46" fontFamily="Arial, sans-serif" fontWeight="600" fontSize="10" fill="#757575" letterSpacing="0.3">by Safaricom</text>
   </svg>
 );
 
 const SOCIAL_LINKS = [
-  { label: "Facebook",  href: "https://facebook.com/VantixKenya",  icon: <FacebookIcon /> },
-  { label: "Instagram", href: "https://instagram.com/VantixKenya", icon: <InstagramIcon /> },
-  { label: "TikTok",    href: "https://tiktok.com/@VantixKenya",   icon: <TikTokIcon /> },
-  { label: "X",         href: "https://x.com/VantixKenya",         icon: <XIcon /> },
+  { label: "Facebook",  href: "https://facebook.com",  icon: <FacebookIcon /> },
+  { label: "Instagram", href: "https://instagram.com", icon: <InstagramIcon /> },
+  { label: "TikTok",    href: "https://tiktok.com",    icon: <TikTokIcon /> },
+  { label: "X",         href: "https://x.com",         icon: <XIcon /> },
 ];
 
 const NAV_SECTIONS = [
@@ -115,32 +56,23 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: "Customer Service", emoji: "🎧",
+    title: "Support", emoji: "🎧",
     links: [
-      { label: "My Account",        to: "/account" },
-      { label: "My Orders",         to: "/orders" },
-      { label: "Track Order",       to: "/orders" },
-      { label: "Returns & Refunds", to: "/help" },
-      { label: "Help Center",       to: "/help" },
+      { label: "My Account",   to: "/account" },
+      { label: "My Orders",    to: "/orders" },
+      { label: "Track Order",  to: "/orders" },
+      { label: "Returns",      to: "/help" },
+      { label: "Help Center",  to: "/help" },
     ],
   },
   {
     title: "Company", emoji: "🏢",
     links: [
       { label: "About Us",   to: "/about" },
-      { label: "Careers",    to: "/about" },
-      { label: "Press",      to: "/about" },
       { label: "Contact Us", to: "/contact" },
-      { label: "Blog",       to: "/about" },
-    ],
-  },
-  {
-    title: "Legal", emoji: "📋",
-    links: [
-      { label: "Privacy Policy",   to: "/privacy" },
-      { label: "Terms of Service", to: "/terms" },
-      { label: "Cookie Policy",    to: "/privacy" },
-      { label: "Sitemap",          to: "/sitemap" },
+      { label: "Privacy",    to: "/privacy" },
+      { label: "Terms",      to: "/terms" },
+      { label: "Sitemap",    to: "/sitemap" },
     ],
   },
 ];
@@ -160,33 +92,23 @@ export default function Footer() {
   return (
     <footer style={{ background: "#0a0f1e", color: "#94a3b8" }}>
 
-      {/* ── Newsletter ── */}
+      {/* Newsletter */}
       <div style={{ background: "#1d2a4a", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4 py-2">
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
             <p style={{ fontSize: 12, color: "#94a3b8", whiteSpace: "nowrap" }}>
               📬 <span style={{ color: "#fff", fontWeight: 600 }}>Stay in the loop</span>
-              <span className="hidden sm:inline"> — exclusive deals &amp; tech news</span>
             </p>
             {subscribed ? (
               <span style={{ color: "#22c55e", fontSize: 12, fontWeight: 700 }}>✓ Subscribed!</span>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-2">
+              <form onSubmit={handleSubscribe} style={{ display: "flex", gap: 8, flex: 1, maxWidth: 360 }}>
                 <input
                   type="email" required placeholder="your@email.com" value={email}
                   onChange={e => setEmail(e.target.value)}
-                  style={{
-                    padding: "4px 12px", borderRadius: 6,
-                    border: "1px solid rgba(255,255,255,0.15)", fontSize: 12,
-                    outline: "none", background: "rgba(255,255,255,0.07)",
-                    color: "#fff", width: 180,
-                  }}
+                  style={{ flex: 1, minWidth: 0, padding: "6px 12px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)", fontSize: 12, outline: "none", background: "rgba(255,255,255,0.07)", color: "#fff" }}
                 />
-                <button type="submit" style={{
-                  background: "#f59e0b", color: "#0f172a", fontWeight: 800,
-                  padding: "4px 14px", borderRadius: 6, border: "none",
-                  cursor: "pointer", fontSize: 12, whiteSpace: "nowrap",
-                }}>
+                <button type="submit" style={{ background: "#f59e0b", color: "#0f172a", fontWeight: 800, padding: "6px 14px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
                   Subscribe →
                 </button>
               </form>
@@ -195,19 +117,19 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ── Main Footer Body ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: 44, paddingBottom: 32 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(4, 1fr)", gap: 36 }}>
+      {/* Main body */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px 24px" }}>
 
-          {/* Brand column — uses matching logo */}
+        {/* MOBILE: stack brand + 3 cols in 2x2 grid. DESKTOP: single row */}
+        <div style={{ display: "grid", gap: 28, gridTemplateColumns: "1fr" }}>
+
+          {/* Brand */}
           <div>
-            <div style={{ marginBottom: 14 }}>
-              <VantixLogo />
-            </div>
-            <p style={{ fontSize: 12, lineHeight: 1.7, marginBottom: 16, color: "#64748b" }}>
+            <div style={{ marginBottom: 12 }}><VantixLogo /></div>
+            <p style={{ fontSize: 12, lineHeight: 1.7, marginBottom: 14, color: "#64748b" }}>
               Kenya's #1 online electronics store. Genuine products, fast delivery, best prices — built for Kenyans.
             </p>
-            <div style={{ display: "flex", gap: 14, marginBottom: 18 }}>
+            <div style={{ display: "flex", gap: 14, marginBottom: 16 }}>
               {[{ val: "50K+", label: "Customers" }, { val: "12K+", label: "Products" }, { val: "4.9★", label: "Rating" }].map(s => (
                 <div key={s.label} style={{ textAlign: "center" }}>
                   <div style={{ color: "#f5a623", fontWeight: 800, fontSize: 14 }}>{s.val}</div>
@@ -218,87 +140,58 @@ export default function Footer() {
             <div style={{ display: "flex", gap: 8 }}>
               {SOCIAL_LINKS.map(s => (
                 <a key={s.label} href={s.href} target="_blank" rel="noreferrer" title={s.label}
-                  style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#94a3b8", cursor: "pointer", textDecoration: "none",
-                    transition: "background 0.15s, color 0.15s",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#f5a623"; e.currentTarget.style.color = "#fff"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "#94a3b8"; }}
-                >
+                  style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)", color: "#94a3b8", textDecoration: "none" }}>
                   {s.icon}
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Nav Sections */}
-          {NAV_SECTIONS.map(section => (
-            <div key={section.title}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
-                <span style={{ fontSize: 13 }}>{section.emoji}</span>
-                <h3 style={{ color: "#fff", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "1.2px" }}>
-                  {section.title}
-                </h3>
+          {/* Nav links — 3 cols on mobile, inline on desktop */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+            {NAV_SECTIONS.map(section => (
+              <div key={section.title}>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
+                  <span style={{ fontSize: 12 }}>{section.emoji}</span>
+                  <h3 style={{ color: "#fff", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "1px" }}>{section.title}</h3>
+                </div>
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 7 }}>
+                  {section.links.map(link => (
+                    <li key={link.label}>
+                      <Link to={link.to} style={{ fontSize: 11, color: "#64748b", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ color: "#1e3a8a", fontSize: 8 }}>▶</span>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
-                {section.links.map(link => (
-                  <li key={link.label}>
-                    <Link to={link.to}
-                      style={{ fontSize: 12, color: "#64748b", textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}
-                      onMouseEnter={e => { e.currentTarget.style.color = "#f5a623"; }}
-                      onMouseLeave={e => { e.currentTarget.style.color = "#64748b"; }}
-                    >
-                      <span style={{ color: "#1e3a8a", fontSize: 9 }}>▶</span>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Divider */}
-        <div style={{ margin: "32px 0 22px", height: 1, background: "linear-gradient(90deg, transparent, #1e3a8a 30%, #f5a623 50%, #1e3a8a 70%, transparent)" }} />
+        <div style={{ margin: "24px 0 18px", height: 1, background: "linear-gradient(90deg, transparent, #1e3a8a 30%, #f5a623 50%, #1e3a8a 70%, transparent)" }} />
 
-        {/* Bottom Bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12, color: "#475569" }}>
-              © {new Date().getFullYear()} <strong style={{ color: "#94a3b8" }}>Vantix Kenya</strong>. All rights reserved.
-            </span>
-            <span style={{ fontSize: 12, color: "#475569" }}>🇰🇪 Made for Kenya</span>
+        {/* Bottom bar */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11, color: "#475569" }}>© {new Date().getFullYear()} <strong style={{ color: "#94a3b8" }}>Vantix Kenya</strong>. All rights reserved.</span>
+            <span style={{ fontSize: 11, color: "#475569" }}>🇰🇪 Made for Kenya</span>
           </div>
-
-          {/* Payment icons */}
+          {/* Payment icons — wrap on mobile */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontSize: 11, color: "#475569" }}>Secure payments:</span>
-
-            {/* Visa */}
-            <span style={{ background: "#fff", borderRadius: 6, padding: "4px 8px", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.45)", height: 32 }}>
-              <img src="https://cdn.jsdelivr.net/npm/payment-icons@1.1.0/min/flat/visa.svg" alt="Visa" style={{ height: 20, width: "auto", display: "block" }} />
-            </span>
-
-            {/* Mastercard */}
-            <span style={{ background: "#fff", borderRadius: 6, padding: "4px 8px", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.45)", height: 32 }}>
-              <img src="https://cdn.jsdelivr.net/npm/payment-icons@1.1.0/min/flat/mastercard.svg" alt="Mastercard" style={{ height: 20, width: "auto", display: "block" }} />
-            </span>
-
-            {/* PayPal */}
-            <span style={{ background: "#fff", borderRadius: 6, padding: "4px 8px", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.45)", height: 32 }}>
-              <img src="https://cdn.jsdelivr.net/npm/payment-icons@1.1.0/min/flat/paypal.svg" alt="PayPal" style={{ height: 20, width: "auto", display: "block" }} />
-            </span>
-
-            {/* M-Pesa — Safaricom green petal + wordmark */}
-            <span style={{
-              borderRadius: 6, padding: "2px 4px",
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.45)", height: 32,
-              background: "#fff",
-            }}>
+            {[
+              { src: "https://cdn.jsdelivr.net/npm/payment-icons@1.1.0/min/flat/visa.svg", alt: "Visa" },
+              { src: "https://cdn.jsdelivr.net/npm/payment-icons@1.1.0/min/flat/mastercard.svg", alt: "Mastercard" },
+              { src: "https://cdn.jsdelivr.net/npm/payment-icons@1.1.0/min/flat/paypal.svg", alt: "PayPal" },
+            ].map(p => (
+              <span key={p.alt} style={{ background: "#fff", borderRadius: 5, padding: "3px 7px", display: "inline-flex", alignItems: "center", height: 28, boxShadow: "0 2px 6px rgba(0,0,0,0.35)" }}>
+                <img src={p.src} alt={p.alt} style={{ height: 18, width: "auto" }} />
+              </span>
+            ))}
+            <span style={{ background: "#fff", borderRadius: 5, padding: "2px 4px", display: "inline-flex", alignItems: "center", height: 28, boxShadow: "0 2px 6px rgba(0,0,0,0.35)" }}>
               <MPesaLogo />
             </span>
           </div>
