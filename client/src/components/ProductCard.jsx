@@ -62,6 +62,7 @@ export default function ProductCard({ product, compact = false }) {
   const { addToCart, toggleWishlist, isWishlisted, user } = useApp();
   const navigate = useNavigate();
   const [loginPrompt, setLoginPrompt] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const wishlisted = isWishlisted(product.id);
   const discount = product.originalPrice
@@ -86,7 +87,8 @@ export default function ProductCard({ product, compact = false }) {
         {loginPrompt && <LoginPrompt message={loginPrompt} onClose={() => setLoginPrompt(null)} />}
         <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col">
           <Link to={`/product/${product.id}`} className="block relative">
-            <img src={product.image} alt={product.title} loading="lazy" className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300" />
+            <img src={product.image} alt={product.title} loading="lazy"
+              className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
             {discount > 0 && (
               <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">-{discount}%</span>
             )}
@@ -121,11 +123,15 @@ export default function ProductCard({ product, compact = false }) {
         {/* Image */}
         <div className="relative overflow-hidden bg-gray-50">
           <Link to={`/product/${product.id}`}>
-            <img src={product.image} alt={product.title} loading="lazy"
-                className="w-full h-24 sm:h-32 lg:h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
+            <img
+              src={product.image}
+              alt={product.title}
+              loading="lazy"
+              className="w-full h-36 sm:h-44 lg:h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+            />
           </Link>
 
-          {/* Badges */}
+          {/* Badges — discount & product badge only, no free shipping */}
           <div className="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-col gap-1">
             {product.badge && (
               <span className="bg-orange-500 text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-2 py-0.5 rounded">{product.badge}</span>
@@ -135,18 +141,35 @@ export default function ProductCard({ product, compact = false }) {
             )}
           </div>
 
-          {/* Free shipping */}
-          {product.freeShipping && (
-            <span className="hidden sm:inline absolute bottom-2 left-2 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded">FREE SHIPPING</span>
-          )}
-
-          {/* Wishlist */}
-          <button onClick={handleWishlist}
-            className="absolute top-1 right-1 sm:top-2 sm:right-2 w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform">
-            <svg viewBox="0 0 24 24" strokeWidth={2} className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${wishlisted ? "fill-red-500 stroke-red-500" : "fill-none stroke-gray-400"}`}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-            </svg>
-          </button>
+          {/* Wishlist button with tooltip */}
+          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex flex-col items-end gap-1">
+            {showTooltip && (
+              <div className="bg-gray-900 text-white text-[10px] font-semibold px-2 py-1 rounded-md whitespace-nowrap shadow-lg">
+                {wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                <div className="absolute right-3 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900" />
+              </div>
+            )}
+            <button
+              onClick={handleWishlist}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-md
+                hover:scale-110 transition-all duration-200 border-2
+                ${wishlisted
+                  ? "bg-red-50 border-red-300"
+                  : "bg-white border-gray-200 hover:border-red-300"
+                }`}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${wishlisted ? "fill-red-500 stroke-red-500" : "fill-none stroke-gray-500 hover:stroke-red-400"}`}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Body */}
@@ -158,18 +181,6 @@ export default function ProductCard({ product, compact = false }) {
             {product.title}
           </Link>
 
-          {/* Rating */}
-          <div className="hidden sm:flex items-center gap-1 mb-1.5 sm:mb-2">
-            <div className="flex">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <svg key={i} viewBox="0 0 24 24" className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-200"}`} fill="currentColor">
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-[9px] sm:text-[10px] text-gray-400">({product.reviewCount?.toLocaleString()})</span>
-          </div>
-
           {/* Price */}
           <div className="mb-1.5 sm:mb-2.5">
             <p className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-900">{toKsh(product.price)}</p>
@@ -178,7 +189,7 @@ export default function ProductCard({ product, compact = false }) {
             )}
           </div>
 
-          {/* Add to Cart only */}
+          {/* Add to Cart */}
           <button onClick={() => addToCart(product)}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[9px] sm:text-xs font-bold py-1.5 sm:py-2 rounded-md sm:rounded-lg transition-colors">
             Add to Cart
