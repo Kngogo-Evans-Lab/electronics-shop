@@ -226,7 +226,7 @@ function Countdown() {
   const pad = n => String(n).padStart(2, "0");
   const Seg = ({ v }) => (
     <span style={{
-      background: C.indigoDark, color: C.white, fontWeight: 800,
+      background: "#2d2a6e", color: C.white, fontWeight: 800,
       fontSize: 15, padding: "3px 7px", borderRadius: 5, minWidth: 30,
       textAlign: "center", fontFamily: "monospace",
     }}>{v}</span>
@@ -501,7 +501,7 @@ function SideMenu({ open, onClose, dispatch }) {
         transition: "transform 0.26s cubic-bezier(0.4,0,0.2,1)",
         overflowY: "auto",
       }}>
-        <div style={{ background: C.indigoDark, padding: "18px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ background: "#2d2a6e", padding: "18px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ color: C.white, fontWeight: 800, fontSize: 15 }}>VANTIX<span style={{ color: C.amber }}>.</span> SHOP254</span>
           <button onClick={onClose} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 7, color: C.white, width: 28, height: 28, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
         </div>
@@ -534,7 +534,7 @@ function PromoBar() {
   const text = items.join("   ·   ") + "   ·   " + items.join("   ·   ");
   return (
     <div style={{
-      background: C.indigoDark, color: C.white,
+      background: "#2d2a6e", color: C.white,
       fontSize: 12, fontWeight: 500, padding: "8px 0",
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 210,
       height: 36, display: "flex", alignItems: "center",
@@ -637,12 +637,8 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
   };
 
   return (
-    <nav style={{ background: C.white, borderBottom: `2px solid ${C.indigoLight}`, boxShadow: "0 2px 12px rgba(55,48,163,0.08)", position: "fixed", top: 36, left: 0, right: 0, zIndex: 200 }}>
+    <nav style={{ background: C.white, borderBottom: `2px solid ${C.gray200}`, boxShadow: "0 2px 12px rgba(55,48,163,0.08)", boxShadow: "0 2px 12px rgba(55,48,163,0.08)", position: "fixed", top: 36, left: 0, right: 0, zIndex: 200 }}>
       <div className="vx-pad" style={{ height: 60, display: "flex", alignItems: "center", gap: 12, maxWidth: 1400, margin: "0 auto" }}>
-
-        <button onClick={onMenuOpen} className="md:hidden" style={{ background: "none", border: "none", cursor: "pointer", padding: 6, borderRadius: 8, color: C.indigo, display: "flex", flexDirection: "column", gap: 5 }}>
-          {[0,1,2].map(i => <span key={i} style={{ display:"block", width:22, height:2.5, background:C.indigo, borderRadius:2 }} />)}
-        </button>
 
         <Link to="/" style={{ display:"flex", alignItems:"center", gap:9, textDecoration:"none", flexShrink:0 }}>
           <div style={{ width:34, height:34, background:`linear-gradient(140deg,${C.indigo},${C.indigoDark})`, borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -659,7 +655,7 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
 
         <div
           ref={searchRef}
-          className="hidden sm:flex"
+          className="hidden sm:flex"s
           style={{ flex: 1, position: "relative", border: `2px solid ${C.indigo}`, borderRadius: 8, overflow: "visible", alignItems: "center", background: C.white }}
         >
           <div style={{ display: "flex", alignItems: "center", width: "100%", overflow: "hidden", borderRadius: 6 }}>
@@ -691,7 +687,7 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
           )}
         </div>
 
-        <div style={{ display:"flex", alignItems:"center", gap:2, flexShrink: 0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink: 0, marginLeft: "auto" }}>
           <a href="https://wa.me/254700000000" target="_blank" rel="noreferrer"
             style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"5px 8px", textDecoration:"none", borderRadius:8, color:C.gray600, minWidth:48 }}
             className="hover:bg-indigo-50 hidden md:flex">
@@ -699,15 +695,18 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
               <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.116 1.528 5.843L0 24l6.335-1.508A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.814 9.814 0 01-5.012-1.371l-.36-.214-3.732.888.936-3.63-.234-.373A9.817 9.817 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182c5.421 0 9.818 4.398 9.818 9.818 0 5.421-4.397 9.818-9.818 9.818z"/>
             </svg>
-            <span style={{ fontSize:9, fontWeight:700, color:C.gray400 }}>WhatsApp</span>
+           <span style={{ fontSize:9, fontWeight:700, color: C.gray400 }}>...</span>
+
           </a>
 
           <Link to="/wishlist" style={{ position:"relative", display:"flex", flexDirection:"column", alignItems:"center", padding:"5px 8px", color:C.gray600, textDecoration:"none", borderRadius:8, minWidth:48 }} className="hover:bg-indigo-50">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" style={{ width:20, height:20 }}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             {wishlist?.length > 0 && (
-              <span style={{ position:"absolute", top:2, right:6, minWidth:16, height:16, padding:"0 4px", borderRadius:8, background:C.red, fontSize:10, fontWeight:800, color:C.white, display:"flex", alignItems:"center", justifyContent:"center" }}>{wishlist.length}</span>
+              <span style={{ fontSize:9, fontWeight:700, color: C.gray400 }}>...</span>
+
             )}
-            <span style={{ fontSize:9, fontWeight:700, color:C.gray400 }}>Wishlist</span>
+            <span style={{ fontSize:9, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>Chat</span>
+
           </Link>
 
           <Link to="/cart" style={{ position:"relative", display:"flex", flexDirection:"column", alignItems:"center", padding:"5px 8px", color:C.gray600, textDecoration:"none", borderRadius:8, minWidth:48 }} className="hover:bg-indigo-50">
@@ -717,9 +716,11 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
               <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
             {cartCount > 0 && (
-              <span style={{ position:"absolute", top:2, right:6, minWidth:16, height:16, padding:"0 4px", borderRadius:8, background:C.red, fontSize:10, fontWeight:800, color:C.white, display:"flex", alignItems:"center", justifyContent:"center" }}>{cartCount > 9 ? "9+" : cartCount}</span>
+              <span style={{ fontSize:9, fontWeight:700, color: C.gray400 }}>...</span>
+
             )}
-            <span style={{ fontSize:9, fontWeight:700, color:C.gray400 }}>Cart</span>
+           <span style={{ fontSize:9, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>Wishlist</span>
+
           </Link>
 
           <div style={{ position:"relative" }} ref={userMenuRef}>
@@ -727,7 +728,7 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
               <>
                 <button onClick={() => setUserMenuOpen(o=>!o)} style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"4px 8px", background:"none", border:"none", cursor:"pointer", borderRadius:8, minWidth:48 }} className="hover:bg-indigo-50">
                   <div className="vx-neon-av" style={{ width:30, height:30, borderRadius:"50%", background:`linear-gradient(135deg,#0ea5e9,#6366f1)`, color:C.white, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:13 }}>{user.name[0].toUpperCase()}</div>
-                  <span style={{ fontSize:9, fontWeight:700, color:C.gray400, marginTop:2 }}>{user.name.split(" ")[0].slice(0,8)}</span>
+                  <span style={{ fontSize:9, fontWeight:700, color:"rgba(255,255,255,0.55)" }}>...</span>
                 </button>
                 {userMenuOpen && (
                   <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", width:200, background:C.white, borderRadius:12, boxShadow:"0 8px 32px rgba(30,27,75,0.14)", border:`1px solid ${C.gray200}`, zIndex:400 }}>
@@ -752,7 +753,7 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" style={{ width:20, height:20 }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
                   </svg>
-                  <span style={{ fontSize:9, fontWeight:700, color:C.gray400 }}>Account</span>
+                  <span style={{ fontSize:9, fontWeight:700, color:"rgba(255,255,255,0.55)" }}>...</span>
                 </Link>
               </div>
             )}
@@ -760,8 +761,8 @@ function MainNav({ cartCount, wishlist, user, logout, dispatch, onMenuOpen }) {
         </div>
       </div>
 
-      <div className="hidden md:flex vx-pad" style={{ borderTop:`1px solid ${C.indigoLight}`, gap:2, alignItems:"center", maxWidth:1400, margin:"0 auto", background:C.white, overflowX:"auto" }}>
-        <Link to="/products" style={{ padding:"0 14px", height:38, display:"flex", alignItems:"center", fontSize:13, fontWeight:700, color:C.indigo, borderBottom:`2.5px solid ${C.indigo}`, textDecoration:"none", whiteSpace:"nowrap" }}>All Products</Link>
+      <div className="hidden md:flex vx-pad" style={{ borderTop:`1px solid rgba(255,255,255,0.08)`, gap:2, alignItems:"center", maxWidth:1400, margin:"0 auto", background:C.indigoDark, overflowX:"auto" }}>
+        <Link to="/products" style={{ padding:"0 14px", height:38, display:"flex", alignItems:"center", fontSize:13, fontWeight:700, color:C.white, borderBottom:`2.5px solid ${C.white}`, textDecoration:"none", whiteSpace:"nowrap" }}>All Products</Link>
         {CATEGORIES.filter(c=>c!=="all").map(cat=>(
           <Link key={cat} to={`/products?category=${cat}`}
             onClick={()=>dispatch({type:"SET_FILTER",filter:{category:cat}})}
@@ -811,9 +812,19 @@ export default function HomePage() {
         </div>
 
         {/* 3D cube category row */}
-        <div style={{ background:C.white, borderRadius:12, padding:"20px 16px", marginBottom:12, border:`1px solid ${C.gray200}` }}>
-          <QuickCats dispatch={dispatch} />
-        </div>
+        {/* 3D cube category row - hidden on mobile */}
+<div
+  className="hidden md:block"
+  style={{
+    background: C.white,
+    borderRadius: 12,
+    padding: "20px 16px",
+    marginBottom: 12,
+    border: `1px solid ${C.gray200}`,
+  }}
+>
+  <QuickCats dispatch={dispatch} />
+</div>
 
         {/* Flash sale */}
         <div style={{ background:C.red, borderRadius:12, overflow:"hidden", marginBottom:12 }}>
@@ -877,7 +888,7 @@ export default function HomePage() {
         <div className="vx-trust">
           {TRUST_ITEMS.map(item => (
             <div key={item.title} className={item.glowClass} style={{
-              background: C.indigoDark,
+              background: "#2d2a6e",
               borderRadius: 40,
               padding: "8px 16px 8px 12px",
               display: "flex",
