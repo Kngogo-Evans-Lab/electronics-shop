@@ -1,98 +1,158 @@
 // FILE: src/pages/PrivacyPage.jsx
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
+import {
+  Database,
+  Eye,
+  UserCheck,
+  Lock,
+  Cookie,
+  ShieldCheck,
+  RefreshCw,
+  FileText,
+} from "lucide-react";
 
 const sections = [
   {
-    title: '1. Information We Collect',
-    content: `We collect information you provide directly to us, such as when you create an account, place an order, or contact our support team. This includes:
-    
-• Personal details: name, email address, phone number, and delivery address
-• Payment information: processed securely through our payment partners (Stripe, M-Pesa, PayPal). We never store raw card details on our servers.
-• Account activity: order history, wishlist, and browsing preferences
-• Communications: messages you send us via contact forms or email`
+    icon: Database,
+    title: "1. Information We Collect",
+    content:
+      "We collect personal information you provide when using our platform, including your name, email, phone number, and delivery address. We also collect order history, account activity, and communication records. Payment data is processed securely by third-party providers and is never stored in raw form on our systems.",
   },
   {
-    title: '2. How We Use Your Information',
-    content: `We use the information we collect to:
-
-• Process and fulfill your orders, and send related updates
-• Manage your account and provide customer support
-• Send you promotional communications (only with your consent)
-• Improve our website, products, and services
-• Comply with legal obligations and prevent fraud`
+    icon: Eye,
+    title: "2. How We Use Your Information",
+    content:
+      "We use your data to process orders, manage accounts, provide customer support, improve platform performance, and prevent fraud. We may also send order updates and promotional messages where permitted.",
   },
   {
-    title: '3. Information Sharing',
-    content: `We do not sell, trade, or rent your personal information to third parties. We may share your data only with:
-
-• Delivery partners (e.g. G4S, DHL Kenya) to fulfill your orders
-• Payment processors to complete transactions securely
-• Legal authorities when required by Kenyan law
-• Service providers who assist our operations under strict confidentiality agreements`
+    icon: UserCheck,
+    title: "3. Information Sharing",
+    content:
+      "We do not sell or rent your personal data. Data is shared only with logistics providers for delivery, payment processors for transactions, and legal authorities when required by law. All partners are bound by confidentiality agreements.",
   },
   {
-    title: '4. Data Security',
-    content: `We take the security of your data seriously. All data transmitted between your browser and our servers is encrypted using 256-bit SSL/TLS. Payment information is handled by PCI-DSS compliant processors. We conduct regular security audits and maintain strict internal access controls.`
+    icon: Lock,
+    title: "4. Data Security",
+    content:
+      "We use SSL encryption, secure servers, and restricted access systems to protect your data. Payment processing is handled by PCI-DSS compliant providers. We continuously monitor for security risks.",
   },
   {
-    title: '5. Cookies',
-    content: `Our website uses cookies to enhance your experience. Cookies help us remember your preferences, keep you logged in, and understand how you use our site. You can control cookie settings through your browser. Disabling cookies may affect some functionality of the website.`
+    icon: Cookie,
+    title: "5. Cookies",
+    content:
+      "Cookies are used to maintain sessions, remember preferences, and analyze usage patterns. You may disable cookies in your browser settings, but some features may not function properly.",
   },
   {
-    title: '6. Your Rights',
-    content: `Under Kenyan data protection law (Data Protection Act, 2019), you have the right to:
-
-• Access the personal data we hold about you
-• Request correction of inaccurate data
-• Request deletion of your data (subject to legal requirements)
-• Opt out of marketing communications at any time
-• Lodge a complaint with the Office of the Data Protection Commissioner
-
-To exercise any of these rights, contact us at privacy@techstorekenya.co.ke`
+    icon: ShieldCheck,
+    title: "6. Your Rights",
+    content:
+      "You have the right to access, correct, or delete your data. You may also opt out of marketing communications at any time, subject to legal requirements.",
   },
   {
-    title: '7. Data Retention',
-    content: `We retain your personal data for as long as your account is active or as needed to provide our services. Order data is retained for 7 years for tax and legal compliance. You may request account deletion at any time by contacting our support team.`
+    icon: Database,
+    title: "7. Data Retention",
+    content:
+      "We retain data only as long as necessary for service delivery and legal compliance. Order records may be stored for tax and audit purposes. You may request deletion of your account.",
   },
   {
-    title: '8. Changes to This Policy',
-    content: `We may update this Privacy Policy from time to time. We will notify you of significant changes by email or by posting a prominent notice on our website. Your continued use of TechStore after changes are posted constitutes your acceptance of the updated policy.`
+    icon: RefreshCw,
+    title: "8. Policy Updates",
+    content:
+      "We may update this policy from time to time. Changes will be posted on this page. Continued use of the platform means acceptance of the updated policy.",
   },
-]
+];
 
 export default function PrivacyPage() {
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="bg-gradient-to-r from-blue-700 to-blue-500 text-white py-16 px-4 text-center">
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">Privacy Policy</h1>
-        <p className="text-blue-100 text-base">Last updated: January 1, 2026</p>
-      </div>
+    <div className="bg-white min-h-screen text-gray-900">
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-8">
-          <p className="text-sm text-blue-800 leading-relaxed">
-            <strong>TechStore Kenya Ltd</strong> ("we", "us", or "our") is committed to protecting your privacy.
-            This policy explains how we collect, use, and safeguard your personal information when you use our website
-            and services. Please read it carefully.
+      {/* HEADER */}
+      <div className="relative py-12 text-center overflow-hidden border-b border-gray-200">
+
+        {/* Indigo Tech Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-950 via-indigo-900 to-indigo-800"></div>
+
+        {/* Grid Overlay */}
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+
+        <div className="relative z-10 flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2 text-white">
+            <FileText className="w-5 h-5" />
+            <h1 className="text-3xl md:text-4xl font-bold tracking-widest uppercase">
+              PRIVACY POLICY
+            </h1>
+          </div>
+
+          <p className="text-[11px] text-indigo-200">
+            Last updated: 1 January 2026
           </p>
         </div>
+      </div>
 
-        <div className="space-y-8">
-          {sections.map(s => (
-            <div key={s.title} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-base font-bold text-gray-900 mb-3">{s.title}</h2>
-              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{s.content}</p>
-            </div>
-          ))}
+      {/* INTRO */}
+      <div className="max-w-4xl mx-auto px-5 md:px-10 py-8">
+        <p className="text-sm text-gray-600 leading-7 mb-6">
+          <span className="font-semibold text-gray-900">Vantix Shop254</span>{" "}
+          is committed to protecting your privacy and ensuring transparency in
+          how your data is collected and used.
+        </p>
+
+        {/* SECTIONS */}
+        <div className="divide-y divide-gray-200 border-y border-gray-200">
+          {sections.map((s) => {
+            const Icon = s.icon;
+
+            return (
+              <div key={s.title} className="py-5 flex gap-3">
+
+                <Icon className="w-5 h-5 text-gray-500 mt-1 flex-shrink-0" />
+
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-900 mb-1">
+                    {s.title}
+                  </h2>
+
+                  <p className="text-sm text-gray-600 leading-7">
+                    {s.content}
+                  </p>
+                </div>
+
+              </div>
+            );
+          })}
         </div>
 
-        <div className="mt-10 text-center space-y-3">
-          <p className="text-sm text-gray-500">Questions about our privacy practices?</p>
-          <Link to="/contact" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition">
-            Contact Us
+        {/* CTA */}
+        <div className="text-center mt-10">
+          <p className="text-[11px] text-gray-500 mb-3">
+            Need help with privacy or data concerns?
+          </p>
+
+          <Link
+            to="/contact"
+            className="
+              inline-flex items-center justify-center
+              px-5 py-2
+              text-xs font-medium text-gray-800
+              bg-gray-100 hover:bg-gray-200
+              border border-gray-300
+              rounded-md
+              shadow-[0_3px_10px_rgba(0,0,0,0.10)]
+              active:translate-y-[1px]
+              transition
+            "
+          >
+            Contact Support
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

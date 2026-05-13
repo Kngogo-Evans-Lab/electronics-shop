@@ -1,8 +1,12 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+// FILE: src/App.jsx
+
+import { lazy, Suspense, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AppProvider, useApp } from './context/AppContext'
+import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ToastContainer from './components/ui/ToastContainer'
+import { BRANDS } from './data/products'
 
 const HomePage      = lazy(() => import('./pages/HomePage'))
 const ProductsPage  = lazy(() => import('./pages/ProductsPage'))
@@ -20,6 +24,14 @@ const ContactPage   = lazy(() => import('./pages/ContactPage'))
 const PrivacyPage   = lazy(() => import('./pages/PrivacyPage'))
 const TermsPage     = lazy(() => import('./pages/TermsPage'))
 const SitemapPage   = lazy(() => import('./pages/SitemapPage'))
+
+const SORT_OPTIONS = [
+  { value: "default",    label: "Featured" },
+  { value: "price-asc",  label: "Price: Low → High" },
+  { value: "price-desc", label: "Price: High → Low" },
+  { value: "newest",     label: "Newest" },
+  { value: "popular",    label: "Most Popular" },
+]
 
 function Loader() {
   return (
@@ -57,43 +69,103 @@ function AuthRoute({ children }) {
   return children
 }
 
+// Wrapper so we can read location inside BrowserRouter
+function AppShell() {
+  const location = useLocation()
+  const { filters, dispatch } = useApp()
+  const isProductsPage = location.pathname === '/products'
+
+  // Filter state — only active on /products, but lives here so Navbar always renders
+  const [viewMode,        setViewMode]        = useState("grid")
+  const [selectedBrands,  setSelectedBrands]  = useState([])
+  const [priceMin,        setPriceMin]        = useState(0)
+  const [priceMax,        setPriceMax]        = useState(Infinity)
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
+
+  const resetAll = () => {
+    dispatch({ type: "RESET_FILTERS" })
+    setSelectedBrands([])
+    setPriceMin(0)
+    setPriceMax(Infinity)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <Navbar
+        // Filter bar props — only meaningful on /products, Navbar hides them elsewhere via showFilterBar check
+        filteredCount={undefined}        // ProductsPage will pass this via context/callback if needed; or leave undefined — Navbar won't show the count
+        sortValue={filters.sort}
+        onSortChange={(val) => dispatch({ type: "SET_FILTER", filter: { sort: val } })}
+        sortOptions={isProductsPage ? SORT_OPTIONS : undefined}
+        viewMode={viewMode}
+        onViewChange={setViewMode}
+        onPriceRange={(min, max) => { setPriceMin(min); setPriceMax(max) }}
+        activePriceMin={priceMin}
+        activePriceMax={priceMax}
+        brands={BRANDS}
+        selectedBrands={selectedBrands}
+        onToggleBrand={(b) => setSelectedBrands(prev =>
+          prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]
+        )}
+        onResetAll={resetAll}
+        onOpenMobileFilters={() => setMobileFilterOpen(true)}
+      />
+
+      <main className="flex-1">
+        <Suspense fallback={<Loader />}>
+          <Routes>
+            {/* Public */}
+            <Route path="/"            element={<HomePage />} />
+            <Route path="/products"    element={
+              <ProductsPage
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                selectedBrands={selectedBrands}
+                setSelectedBrands={setSelectedBrands}
+                priceMin={priceMin}
+                setPriceMin={setPriceMin}
+                priceMax={priceMax}
+                setPriceMax={setPriceMax}
+                mobileFilterOpen={mobileFilterOpen}
+                setMobileFilterOpen={setMobileFilterOpen}
+                resetAll={resetAll}
+              />
+            } />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/cart"        element={<CartPage />} />
+            <Route path="/about"       element={<AboutPage />} />
+            <Route path="/help"        element={<HelpPage />} />
+            <Route path="/contact"     element={<ContactPage />} />
+            <Route path="/privacy"     element={<PrivacyPage />} />
+            <Route path="/terms"       element={<TermsPage />} />
+            <Route path="/sitemap"     element={<SitemapPage />} />
+
+            {/* Protected */}
+            <Route path="/checkout"      element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
+            <Route path="/wishlist"      element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
+            <Route path="/orders"        element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
+            <Route path="/account"       element={<PrivateRoute><AccountPage /></PrivateRoute>} />
+            <Route path="/order-success" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
+
+            {/* Auth */}
+            <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </main>
+
+      <Footer />
+      <ToastContainer />
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <AppProvider>
       <BrowserRouter>
-        <div className="min-h-screen bg-gray-100 flex flex-col">
-          <main className="flex-1">
-            <Suspense fallback={<Loader />}>
-              <Routes>
-                {/* Public */}
-                <Route path="/"            element={<HomePage />} />
-                <Route path="/products"    element={<ProductsPage />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/cart"        element={<CartPage />} />
-                <Route path="/about"       element={<AboutPage />} />
-                <Route path="/help"        element={<HelpPage />} />
-                <Route path="/contact"     element={<ContactPage />} />
-                <Route path="/privacy"     element={<PrivacyPage />} />
-                <Route path="/terms"       element={<TermsPage />} />
-                <Route path="/sitemap"     element={<SitemapPage />} />
-
-                {/* Protected */}
-                <Route path="/checkout"      element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
-                <Route path="/wishlist"      element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
-                <Route path="/orders"        element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
-                <Route path="/account"       element={<PrivateRoute><AccountPage /></PrivateRoute>} />
-                <Route path="/order-success" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
-
-                {/* Auth */}
-                <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
-
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </main>
-          <Footer />
-          <ToastContainer />
-        </div>
+        <AppShell />
       </BrowserRouter>
     </AppProvider>
   )

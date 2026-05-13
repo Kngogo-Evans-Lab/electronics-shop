@@ -3,355 +3,624 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 
-const RATE = 130;
-const kes = (usd) => `KES ${(usd * RATE).toLocaleString("en-KE", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-
-const statusColors = {
-  "Processing": "bg-yellow-100 text-yellow-700",
-  "Confirmed":  "bg-blue-100 text-blue-700",
-  "Shipped":    "bg-purple-100 text-purple-700",
-  "Delivered":  "bg-green-100 text-green-700",
-  "Cancelled":  "bg-red-100 text-red-700",
+// ─── Design tokens (matches HomePage palette) ────────────────────────────────
+const C = {
+  indigo:      "#3730a3",
+  indigoDark:  "#1e1b4b",
+  indigoNav:   "#2d2a6e",
+  indigoMid:   "#4f46e5",
+  indigoLight: "#e0e7ff",
+  amber:       "#f59e0b",
+  red:         "#dc2626",
+  green:       "#059669",
+  white:       "#ffffff",
+  gray50:      "#f9fafb",
+  gray100:     "#f3f4f6",
+  gray200:     "#e5e7eb",
+  gray300:     "#d1d5db",
+  gray400:     "#9ca3af",
+  gray500:     "#6b7280",
+  gray600:     "#4b5563",
+  gray700:     "#374151",
+  gray900:     "#111827",
 };
 
-const statusSteps = ["Processing", "Confirmed", "Shipped", "Delivered"];
+const RATE = 130;
+const kes = (usd) =>
+  `KES ${Math.round(usd * RATE).toLocaleString("en-KE")}`;
 
-// Generate realistic tracking timeline based on order status
-function getTrackingEvents(order) {
-  const base = new Date(order.date);
-  const all = [
-    {
-      status: "Order Placed",
-      detail: "Your order has been received and is being reviewed.",
-      location: "Vantix Kenya — Online",
-      icon: "🛒",
-      color: "#3b82f6",
-      time: new Date(base),
-    },
-    {
-      status: "Order Confirmed",
-      detail: "Payment verified. Your order has been confirmed and sent to the warehouse.",
-      location: "Vantix Warehouse, Westlands, Nairobi",
-      icon: "✅",
-      color: "#3b82f6",
-      time: new Date(base.getTime() + 1 * 60 * 60 * 1000),
-    },
-    {
-      status: "Packed & Ready",
-      detail: "Items have been picked, packed, and labelled for dispatch.",
-      location: "Vantix Warehouse, Westlands, Nairobi",
-      icon: "📦",
-      color: "#8b5cf6",
-      time: new Date(base.getTime() + 5 * 60 * 60 * 1000),
-    },
-    {
-      status: "Dispatched",
-      detail: "Your package has left our warehouse and is on its way.",
-      location: "Vantix Dispatch Hub, Industrial Area, Nairobi",
-      icon: "🚚",
-      color: "#8b5cf6",
-      time: new Date(base.getTime() + 24 * 60 * 60 * 1000),
-    },
-    {
-      status: "In Transit",
-      detail: "Package is in transit with our courier partner G4S Kenya.",
-      location: "G4S Sorting Facility, Embakasi, Nairobi",
-      icon: "🔄",
-      color: "#f59e0b",
-      time: new Date(base.getTime() + 30 * 60 * 60 * 1000),
-    },
-    {
-      status: "Out for Delivery",
-      detail: "Your package is out for delivery. Our rider will call you shortly.",
-      location: "Local Delivery Hub — Your Area",
-      icon: "🛵",
-      color: "#f59e0b",
-      time: new Date(base.getTime() + 46 * 60 * 60 * 1000),
-    },
-    {
-      status: "Delivered",
-      detail: "Package delivered successfully. Thank you for shopping with Vantix!",
-      location: "Your Delivery Address",
-      icon: "🎉",
-      color: "#22c55e",
-      time: new Date(order.estimatedDelivery),
-    },
-  ];
+const formatDateTime = (timestamp) => {
+  if (!timestamp) return "—";
+  return new Date(timestamp).toLocaleString("en-KE", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+};
 
-  const stepMap = { Processing: 2, Confirmed: 3, Shipped: 5, Delivered: 7 };
-  const count = stepMap[order.status] || 2;
-  return all.slice(0, count);
+// ─── Tab definitions ──────────────────────────────────────────────────────────
+const TABS = [
+  { key: "all",        label: "All Orders" },
+  { key: "Processing", label: "Unpaid" },
+  { key: "Confirmed",  label: "To be Shipped" },
+  { key: "Shipped",    label: "Shipped" },
+  { key: "Delivered",  label: "Completed" },
+  { key: "Cancelled",  label: "Cancelled" },
+];
+
+// ─── Status pill config ───────────────────────────────────────────────────────
+const STATUS_CONFIG = {
+  Processing: { bg: "#fef3c7", color: "#92400e", dot: "#f59e0b", label: "Unpaid"         },
+  Confirmed:  { bg: "#dbeafe", color: "#1e40af", dot: "#3b82f6", label: "To be Shipped"  },
+  Shipped:    { bg: "#ede9fe", color: "#5b21b6", dot: "#7c3aed", label: "Shipped"         },
+  Delivered:  { bg: "#d1fae5", color: "#065f46", dot: "#059669", label: "Completed"       },
+  Cancelled:  { bg: "#fee2e2", color: "#991b1b", dot: "#dc2626", label: "Cancelled"       },
+};
+
+// ─── Global CSS ───────────────────────────────────────────────────────────────
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  .op-page * { box-sizing: border-box; }
+  .op-page { font-family: 'DM Sans', system-ui, sans-serif; background: #f0f0fa; min-height: 100vh; }
+
+  .op-tab-btn {
+    position: relative;
+    padding: 0 18px;
+    height: 44px;
+    font-size: 13px;
+    font-weight: 600;
+    color: ${C.gray500};
+    background: none;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  .op-tab-btn:hover { color: ${C.indigo}; }
+  .op-tab-btn.active {
+    color: ${C.indigo};
+    font-weight: 700;
+  }
+  .op-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 18px; right: 18px;
+    height: 2.5px;
+    background: ${C.indigo};
+    border-radius: 2px 2px 0 0;
+  }
+
+  .op-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: ${C.red};
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+
+  .op-order-card {
+    background: ${C.white};
+    border: 1px solid ${C.gray200};
+    border-radius: 14px;
+    overflow: hidden;
+    transition: box-shadow 0.18s, transform 0.18s;
+    animation: opFadeIn 0.3s ease both;
+  }
+  .op-order-card:hover {
+    box-shadow: 0 4px 24px rgba(55,48,163,0.10);
+    transform: translateY(-1px);
+  }
+
+  @keyframes opFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .op-order-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 18px;
+    background: ${C.gray50};
+    border-bottom: 1px solid ${C.gray100};
+    flex-wrap: wrap;
+  }
+
+  .op-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 1.5px solid ${C.indigo};
+    border-radius: 5px;
+    background: none;
+    color: ${C.indigo};
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  .op-copy-btn:hover { background: ${C.indigo}; color: #fff; }
+  .op-copy-btn.copied { background: ${C.green}; border-color: ${C.green}; color: #fff; }
+
+  .op-col-head {
+    font-size: 11px;
+    font-weight: 700;
+    color: ${C.gray400};
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .op-item-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid ${C.gray100};
+    transition: background 0.12s;
+  }
+  .op-item-row:last-child { border-bottom: none; }
+  .op-item-row:hover { background: #fafafa; }
+
+  /* Column headers row */
+  .op-col-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    padding: 8px 18px;
+    border-bottom: 1px solid ${C.gray100};
+    background: ${C.gray50};
+  }
+
+  .op-action-btn {
+    padding: 5px 14px;
+    border-radius: 7px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid;
+    transition: all 0.13s;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    white-space: nowrap;
+  }
+
+  .op-btn-track {
+    border-color: ${C.indigo};
+    color: ${C.indigo};
+    background: #fff;
+  }
+  .op-btn-track:hover { background: ${C.indigo}; color: #fff; }
+
+  .op-btn-review {
+    border-color: ${C.amber};
+    color: ${C.amber};
+    background: #fff;
+  }
+  .op-btn-review:hover { background: ${C.amber}; color: #fff; }
+
+  .op-btn-delete {
+    border-color: ${C.gray300};
+    color: ${C.gray500};
+    background: #fff;
+  }
+  .op-btn-delete:hover { border-color: ${C.red}; color: ${C.red}; }
+
+  .op-btn-again {
+    border-color: ${C.green};
+    color: ${C.green};
+    background: #fff;
+  }
+  .op-btn-again:hover { background: ${C.green}; color: #fff; }
+
+  .op-detail-link {
+    font-size: 12px;
+    font-weight: 700;
+    color: ${C.indigo};
+    text-decoration: none;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .op-detail-link:hover { text-decoration: underline; }
+
+  .op-order-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: ${C.gray600};
+  }
+
+  .op-pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid ${C.indigo};
+    background: ${C.white};
+    color: ${C.indigo};
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: all 0.13s;
+  }
+  .op-pagination-btn:hover { background: ${C.indigo}; color: #fff; }
+  .op-pagination-btn:disabled { border-color: ${C.gray200}; color: ${C.gray300}; cursor: not-allowed; }
+  .op-pagination-btn:disabled:hover { background: ${C.white}; color: ${C.gray300}; }
+
+  @media (max-width: 640px) {
+    .op-item-row { grid-template-columns: 1fr; gap: 8px; }
+    .op-col-row { display: none; }
+    .op-order-header { gap: 8px; }
+  }
+`;
+
+// ─── Copy button ──────────────────────────────────────────────────────────────
+function CopyBtn({ text }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+  return (
+    <button className={`op-copy-btn ${copied ? "copied" : ""}`} onClick={copy}>
+      {copied ? (
+        <>✓ Copied</>
+      ) : (
+        <>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </>
+      )}
+    </button>
+  );
 }
 
-// ── Track Order Modal ──────────────────────────────────────────────────────────
-function TrackOrderModal({ order, onClose }) {
-  const events = getTrackingEvents(order);
-  const latest = events[events.length - 1];
+// ─── Status pill ──────────────────────────────────────────────────────────────
+function StatusPill({ status }) {
+  const cfg = STATUS_CONFIG[status] || { bg: C.gray100, color: C.gray600, dot: C.gray400, label: status };
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      background: cfg.bg, color: cfg.color,
+      fontSize: 11.5, fontWeight: 700,
+      padding: "4px 10px", borderRadius: 20,
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.dot, flexShrink: 0 }} />
+      {cfg.label}
+    </span>
+  );
+}
+
+// ─── Order card ───────────────────────────────────────────────────────────────
+function OrderCard({ order, onDelete, onBuyAgain }) {
+  const placedAt = order.createdAt || order.date;
+  const [reviewedItems, setReviewedItems] = useState({});
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div className="op-order-card">
 
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-          <div>
-            <h2 className="font-bold text-gray-900 text-lg">Track Order</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{order.id}</p>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+      {/* ── Order header row ── */}
+      <div className="op-order-header">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flex: 1 }}>
+          <span style={{ fontSize: 10.5, color: C.gray400, fontWeight: 600 }}>Order No.</span>
+          <span className="op-order-id">{order.id}</span>
+          <CopyBtn text={order.id} />
+          <span style={{ fontSize: 10.5, color: C.gray400, marginLeft: 4 }}>
+            Order Time: <span style={{ color: C.gray600, fontWeight: 600 }}>{formatDateTime(placedAt)}</span>
+          </span>
         </div>
+        <Link to={`/orders/${order.id}`} className="op-detail-link">
+          Order Detail →
+        </Link>
+      </div>
 
-        <div className="px-6 py-5 space-y-5">
+      {/* ── Column labels ── */}
+      <div className="op-col-row">
+        <span className="op-col-head">Product Info</span>
+        <span className="op-col-head" style={{ minWidth: 110, textAlign: "right" }}>Order Amount</span>
+        <span className="op-col-head" style={{ minWidth: 120, textAlign: "center" }}>Order Status</span>
+        <span className="op-col-head" style={{ minWidth: 110, textAlign: "center" }}>Options</span>
+      </div>
 
-          {/* Status banner */}
-          <div className="rounded-xl p-4 flex items-center gap-4" style={{ background: "linear-gradient(135deg, #1d4ed8, #4f46e5)" }}>
-            <div className="text-3xl">{latest.icon}</div>
-            <div className="flex-1">
-              <p className="text-white font-bold text-sm">{latest.status}</p>
-              <p className="text-blue-100 text-xs mt-0.5">{latest.detail}</p>
-            </div>
-            <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${statusColors[order.status] || "bg-gray-100 text-gray-600"}`}>
-              {order.status}
-            </span>
-          </div>
+      {/* ── Item rows ── */}
+      {order.items.map((item, idx) => (
+        <div key={item.id || idx} className="op-item-row">
 
-          {/* Courier info */}
-          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-lg shrink-0">🚚</div>
-            <div className="flex-1">
-              <p className="text-xs text-gray-400">Courier Partner</p>
-              <p className="font-bold text-gray-800 text-sm">G4S Kenya Logistics</p>
-              <p className="text-xs text-gray-500">Tracking ref: {order.id.replace("ORD-", "G4S-")}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-400">Est. Delivery</p>
-              <p className="font-bold text-blue-600 text-sm">
-                {new Date(order.estimatedDelivery).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
+          {/* Product info */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+            <img
+              src={item.image}
+              alt={item.title}
+              style={{
+                width: 64, height: 64, objectFit: "cover",
+                borderRadius: 10, flexShrink: 0,
+                border: `1px solid ${C.gray200}`,
+              }}
+            />
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                fontSize: 13, fontWeight: 600, color: C.gray900,
+                overflow: "hidden", textOverflow: "ellipsis",
+                display: "-webkit-box", WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical", lineHeight: 1.4,
+                marginBottom: 4,
+              }}>{item.title}</p>
+              <p style={{ fontSize: 11.5, color: C.gray400 }}>
+                {item.variant && <span style={{ marginRight: 8 }}>{item.variant}</span>}
+                <span style={{ fontWeight: 700, color: C.gray600, fontFamily: "'JetBrains Mono', monospace" }}>
+                  KES {Math.round(item.price * RATE).toLocaleString("en-KE")}
+                </span>
+                <span style={{ color: C.gray300, margin: "0 6px" }}>×</span>
+                <span style={{ color: C.gray600, fontWeight: 600 }}>x{item.qty}</span>
               </p>
             </div>
           </div>
 
-          {/* Timeline */}
-          <div>
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Delivery Timeline</p>
-            <div className="relative">
-              {/* Vertical line */}
-              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-100" />
-
-              <div className="space-y-0">
-                {[...events].reverse().map((event, i) => {
-                  const isLatest = i === 0;
-                  return (
-                    <div key={i} className="relative flex gap-4 pb-5 last:pb-0">
-                      {/* Dot */}
-                      <div className="relative z-10 shrink-0 flex flex-col items-center">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm border-2 border-white shadow-sm"
-                          style={{ background: isLatest ? event.color : "#e5e7eb", fontSize: 14 }}
-                        >
-                          {isLatest ? event.icon : "✓"}
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className={`flex-1 pb-1 ${isLatest ? "" : "opacity-70"}`}>
-                        <div className="flex items-start justify-between gap-2">
-                          <p className={`text-sm font-bold ${isLatest ? "text-gray-900" : "text-gray-600"}`}>
-                            {event.status}
-                          </p>
-                          <p className="text-[10px] text-gray-400 whitespace-nowrap shrink-0">
-                            {event.time.toLocaleDateString("en-KE", { day: "numeric", month: "short" })}
-                            {" "}
-                            {event.time.toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-0.5">{event.detail}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <p className="text-[10px] text-gray-400">{event.location}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Delivery address */}
-          {order.shipping && (
-            <div className="bg-blue-50 rounded-xl p-4">
-              <p className="text-xs font-bold text-blue-700 mb-2 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Delivery Address
-              </p>
-              <p className="text-sm text-blue-900 font-semibold">{order.shipping.firstName} {order.shipping.lastName}</p>
-              <p className="text-xs text-blue-700">{order.shipping.address}, {order.shipping.city}</p>
-              <p className="text-xs text-blue-700">{order.shipping.phone}</p>
-            </div>
-          )}
-
-          {/* Help */}
-          <div className="text-center pb-1">
-            <p className="text-xs text-gray-400">
-              Need help?{" "}
-              <Link to="/contact" onClick={onClose} className="text-blue-600 font-semibold hover:underline">
-                Contact Support
-              </Link>
-              {" "}or call{" "}
-              <a href="tel:+254700000000" className="text-blue-600 font-semibold hover:underline">+254 700 000 000</a>
+          {/* Order amount */}
+          <div style={{ minWidth: 110, textAlign: "right" }}>
+            <p style={{ fontSize: 15, fontWeight: 800, color: C.indigoDark, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+              KES {Math.round(item.price * item.qty * RATE).toLocaleString("en-KE")}
             </p>
+            <p style={{ fontSize: 10.5, color: C.gray400, marginTop: 2 }}>incl. shipping</p>
           </div>
+
+          {/* Status */}
+          <div style={{ minWidth: 120, display: "flex", justifyContent: "center" }}>
+            <StatusPill status={order.status} />
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ minWidth: 110, display: "flex", flexDirection: "column", gap: 6, alignItems: "stretch" }}>
+            {(order.status === "Shipped" || order.status === "Confirmed") && (
+              <button className="op-action-btn op-btn-track">
+                Track Order
+              </button>
+            )}
+            {order.status === "Delivered" && (
+              <button
+                className="op-action-btn op-btn-review"
+                onClick={() => setReviewedItems(r => ({ ...r, [item.id]: true }))}
+                disabled={reviewedItems[item.id]}
+                style={reviewedItems[item.id] ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+              >
+                {reviewedItems[item.id] ? "Reviewed ✓" : "Review"}
+              </button>
+            )}
+            <button
+              className="op-action-btn op-btn-again"
+              onClick={() => onBuyAgain(item)}
+            >
+              Buy Again
+            </button>
+            {(order.status === "Delivered" || order.status === "Cancelled") && (
+              <button
+                className="op-action-btn op-btn-delete"
+                onClick={() => onDelete(order.id)}
+              >
+                Delete
+              </button>
+            )}
+          </div>
+
         </div>
+      ))}
+
+      {/* ── Order total footer ── */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "flex-end",
+        gap: 12, padding: "10px 18px",
+        borderTop: `1px solid ${C.gray100}`,
+        background: C.gray50,
+      }}>
+        <span style={{ fontSize: 12, color: C.gray500 }}>
+          {order.items.reduce((s, i) => s + i.qty, 0)} item{order.items.reduce((s, i) => s + i.qty, 0) !== 1 ? "s" : ""}
+        </span>
+        <span style={{ fontSize: 12, color: C.gray400 }}>·</span>
+        <span style={{ fontSize: 12, color: C.gray600 }}>Order total:</span>
+        <span style={{
+          fontSize: 16, fontWeight: 800, color: C.indigo,
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+        }}>
+          {kes(order.total)}
+        </span>
       </div>
     </div>
   );
 }
 
-// ── Main OrdersPage ────────────────────────────────────────────────────────────
+// ─── Main page ────────────────────────────────────────────────────────────────
+const PAGE_SIZE = 5;
+
 export default function OrdersPage() {
-  const { orders, user, addToCart } = useApp();
-  const [trackingOrder, setTrackingOrder] = useState(null);
+  const { orders, user, addToCart, dispatch } = useApp();
+  const [activeTab, setActiveTab] = useState("all");
+  const [page, setPage] = useState(1);
+  const [deleted, setDeleted] = useState(new Set());
 
   if (!user) {
     return (
-      <div className="max-w-md mx-auto px-4 py-20 text-center">
-        <div className="text-5xl mb-4">🔒</div>
-        <h2 className="text-xl font-bold text-gray-800 mb-2">Sign in to view your orders</h2>
-        <Link to="/auth" className="inline-block mt-4 px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700">Sign In</Link>
+      <div className="op-page" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+        <style>{CSS}</style>
+        <div style={{ textAlign: "center", padding: 32 }}>
+          <div style={{ fontSize: 52, marginBottom: 12 }}>🔒</div>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: C.gray900, marginBottom: 6 }}>Sign in to view your orders</h2>
+          <p style={{ fontSize: 13, color: C.gray500, marginBottom: 24 }}>Track your purchases and delivery status</p>
+          <Link to="/auth" style={{
+            display: "inline-block", padding: "10px 28px",
+            background: C.indigo, color: C.white,
+            borderRadius: 10, fontWeight: 700, fontSize: 14,
+            textDecoration: "none",
+          }}>Sign In</Link>
+        </div>
       </div>
     );
   }
 
+  const visibleOrders = orders.filter(o => !deleted.has(o.id));
+
+  // Tab counts
+  const counts = TABS.reduce((acc, tab) => {
+    acc[tab.key] = tab.key === "all"
+      ? visibleOrders.length
+      : visibleOrders.filter(o => o.status === tab.key).length;
+    return acc;
+  }, {});
+
+  // Filter by tab
+  const filtered = activeTab === "all"
+    ? visibleOrders
+    : visibleOrders.filter(o => o.status === activeTab);
+
+  // Paginate
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setPage(1);
+  };
+
+  const handleDelete = (orderId) => {
+    setDeleted(prev => new Set([...prev, orderId]));
+  };
+
+  const handleBuyAgain = (item) => {
+    addToCart(item);
+  };
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="op-page">
+      <style>{CSS}</style>
 
-      {/* Track Order Modal */}
-      {trackingOrder && <TrackOrderModal order={trackingOrder} onClose={() => setTrackingOrder(null)} />}
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 16px 48px" }}>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
-
-      {orders.length === 0 ? (
-        <div className="bg-white rounded-2xl p-16 text-center border border-gray-100">
-          <div className="text-5xl mb-4">📦</div>
-          <h2 className="font-bold text-gray-800 text-xl mb-2">No orders yet</h2>
-          <p className="text-gray-400 mb-6">Your orders will appear here after you make a purchase</p>
-          <Link to="/products" className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition">
-            Start Shopping
-          </Link>
+        {/* ── Page header ── */}
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 900, color: C.indigoDark, marginBottom: 2 }}>My Orders</h1>
+          <p style={{ fontSize: 13, color: C.gray400 }}>Track your purchases and delivery status</p>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div key={order.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
 
-              {/* Order header */}
-              <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 border-b border-gray-50 bg-gray-50">
-                <div className="flex items-center gap-6 flex-wrap text-sm">
-                  <div>
-                    <p className="text-gray-400 text-xs">Order ID</p>
-                    <p className="font-bold text-gray-800">{order.id}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs">Date</p>
-                    <p className="font-semibold text-gray-700">{new Date(order.date).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs">Total</p>
-                    <p className="font-bold text-gray-900">{kes(order.total)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs">Est. Delivery</p>
-                    <p className="font-semibold text-gray-700">{new Date(order.estimatedDelivery).toLocaleDateString("en-KE", { day: "numeric", month: "short" })}</p>
-                  </div>
-                </div>
-                <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${statusColors[order.status] || "bg-gray-100 text-gray-600"}`}>
-                  {order.status}
-                </span>
-              </div>
+        {/* ── Tabs ── */}
+        <div style={{
+          background: C.white,
+          borderRadius: 14,
+          border: `1px solid ${C.gray200}`,
+          marginBottom: 16,
+          overflow: "hidden",
+        }}>
+          <div style={{
+            display: "flex",
+            overflowX: "auto",
+            borderBottom: `1px solid ${C.gray100}`,
+            padding: "0 4px",
+          }}>
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                className={`op-tab-btn ${activeTab === tab.key ? "active" : ""}`}
+                onClick={() => handleTabChange(tab.key)}
+              >
+                {tab.label}
+                {counts[tab.key] > 0 && tab.key !== "all" && (
+                  <span className="op-badge">{counts[tab.key]}</span>
+                )}
+              </button>
+            ))}
+          </div>
 
-              {/* Progress bar */}
-              <div className="px-5 py-4 border-b border-gray-50">
-                <div className="flex items-center justify-between relative">
-                  <div className="absolute top-3.5 left-0 right-0 h-0.5 bg-gray-200 z-0" />
-                  <div
-                    className="absolute top-3.5 left-0 h-0.5 bg-blue-600 z-0 transition-all"
-                    style={{ width: `${(statusSteps.indexOf(order.status) / (statusSteps.length - 1)) * 100}%` }}
+          {/* ── Column header strip ── */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 130px 140px 120px",
+            padding: "8px 18px",
+            background: C.gray50,
+          }} className="hidden sm:grid">
+            <span className="op-col-head">Product Info</span>
+            <span className="op-col-head" style={{ textAlign: "right" }}>Order Amount</span>
+            <span className="op-col-head" style={{ textAlign: "center" }}>Order Status</span>
+            <span className="op-col-head" style={{ textAlign: "center" }}>Options</span>
+          </div>
+        </div>
+
+        {/* ── Empty state ── */}
+        {paginated.length === 0 ? (
+          <div style={{
+            background: C.white, borderRadius: 14, border: `1px solid ${C.gray200}`,
+            padding: "56px 24px", textAlign: "center",
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📦</div>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: C.gray900, marginBottom: 6 }}>No orders here</h2>
+            <p style={{ fontSize: 13, color: C.gray400, marginBottom: 24 }}>
+              {activeTab === "all"
+                ? "You haven't placed any orders yet."
+                : `No ${TABS.find(t => t.key === activeTab)?.label.toLowerCase()} orders found.`}
+            </p>
+            <Link to="/products" style={{
+              display: "inline-block", padding: "10px 28px",
+              background: C.indigo, color: C.white,
+              borderRadius: 10, fontWeight: 700, fontSize: 13,
+              textDecoration: "none",
+            }}>Start Shopping →</Link>
+          </div>
+        ) : (
+          <>
+            {/* ── Order list ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {paginated.map((order, i) => (
+                <div key={order.id} style={{ animationDelay: `${i * 0.05}s` }}>
+                  <OrderCard
+                    order={order}
+                    onDelete={handleDelete}
+                    onBuyAgain={handleBuyAgain}
                   />
-                  {statusSteps.map((s, i) => {
-                    const currentIdx = statusSteps.indexOf(order.status);
-                    const done = i <= currentIdx;
-                    return (
-                      <div key={s} className="flex flex-col items-center gap-1 z-10">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                          done ? "bg-blue-600 text-white" : "bg-white border-2 border-gray-200 text-gray-400"
-                        }`}>
-                          {done ? "✓" : i + 1}
-                        </div>
-                        <span className={`text-xs font-medium ${done ? "text-blue-600" : "text-gray-400"} hidden sm:block`}>{s}</span>
-                      </div>
-                    );
-                  })}
                 </div>
-              </div>
-
-              {/* Items */}
-              <div className="px-5 py-4">
-                <div className="space-y-3">
-                  {order.items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-3">
-                      <img src={item.image} alt={item.title} className="w-14 h-14 object-cover rounded-xl bg-gray-50 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <Link to={`/product/${item.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-600 line-clamp-1">{item.title}</Link>
-                        {item.variant && <p className="text-xs text-gray-400">{item.variant}</p>}
-                        <p className="text-xs text-gray-500">Qty: {item.qty} × {kes(item.price)}</p>
-                      </div>
-                      <p className="font-bold text-gray-800 text-sm shrink-0">{kes(item.price * item.qty)}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex flex-wrap gap-3 mt-4">
-                  <button
-                    onClick={() => setTrackingOrder(order)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Track Order
-                  </button>
-                  <Link
-                    to="/help"
-                    className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold rounded-xl transition"
-                  >
-                    Return / Refund
-                  </Link>
-                  <button
-                    onClick={() => order.items.forEach(item => addToCart(item))}
-                    className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl transition ml-auto"
-                  >
-                    Buy Again
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+
+            {/* ── Pagination ── */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "flex-end",
+              gap: 12, marginTop: 20,
+            }}>
+              <span style={{ fontSize: 13, color: C.gray500 }}>
+                Current Page: <strong style={{ color: C.gray700 }}>{page}</strong>
+                <span style={{ color: C.gray300, margin: "0 6px" }}>/</span>
+                <span style={{ color: C.gray500 }}>{totalPages}</span>
+              </span>
+              <button
+                className="op-pagination-btn"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                ← Previous
+              </button>
+              <button
+                className="op-pagination-btn"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        )}
+
+      </div>
     </div>
   );
 }

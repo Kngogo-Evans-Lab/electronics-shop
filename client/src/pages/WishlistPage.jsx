@@ -16,7 +16,7 @@ export default function WishlistPage() {
           <p className="text-gray-500 text-sm mt-0.5">{wishlist.length} saved items</p>
         </div>
         {wishlist.length > 0 && (
-          <button onClick={() => wishlist.forEach(i => moveToCart(i.id))} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition">
+          <button onClick={() => wishlist.forEach(i => moveToCart(i.id))} className="px-1 py-1 bg-orange-900 hover:bg-blue-200 text-white text-sm font-semi-bold rounded-xl transition">
             Move All to Cart
           </button>
         )}
@@ -27,7 +27,7 @@ export default function WishlistPage() {
           <div className="text-5xl mb-4">❤️</div>
           <h2 className="font-bold text-gray-800 text-xl mb-2">Your wishlist is empty</h2>
           <p className="text-gray-400 mb-6">Save products you love by clicking the ❤️ icon</p>
-          <Link to="/products" className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition">
+          <Link to="/products" className="inline-block px-3 py-3 bg-blue-900 hover:bg-blue-700 text-white font-bold rounded-xl transition">
             Browse Products
           </Link>
         </div>

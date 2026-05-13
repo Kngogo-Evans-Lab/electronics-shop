@@ -1,88 +1,162 @@
-// FILE: src/pages/SitemapPage.jsx
 import { Link } from "react-router-dom";
+import {
+  ShoppingCart,
+  User,
+  Headset,
+  Building2,
+  Scale,
+  LayoutGrid,
+  ChevronRight,
+} from "lucide-react";
 
 const sections = [
   {
-    title: "Shop",
+    icon: ShoppingCart,
+    title: "SHOP",
     links: [
-      { label: "All Products",       to: "/products" },
-      { label: "Phones",             to: "/products?category=phones" },
-      { label: "Laptops",            to: "/products?category=laptops" },
-      { label: "Tablets",            to: "/products?category=tablets" },
-      { label: "Accessories",        to: "/products?category=accessories" },
-      { label: "Audio",              to: "/products?category=audio" },
-      { label: "Cameras",            to: "/products?category=cameras" },
-      { label: "Gaming",             to: "/products?category=gaming" },
+      { label: "All Products", to: "/products" },
+      { label: "Phones", to: "/products?category=phones" },
+      { label: "Laptops", to: "/products?category=laptops" },
+      { label: "Accessories", to: "/products?category=accessories" },
+      { label: "Gaming", to: "/products?category=gaming" },
     ],
   },
   {
-    title: "Account",
+    icon: User,
+    title: "ACCOUNT",
     links: [
       { label: "Sign In / Register", to: "/auth" },
-      { label: "My Account",         to: "/account" },
-      { label: "My Orders",          to: "/orders" },
-      { label: "Wishlist",           to: "/wishlist" },
-      { label: "Shopping Cart",      to: "/cart" },
-      { label: "Checkout",           to: "/checkout" },
+      { label: "My Orders", to: "/orders" },
+      { label: "Wishlist", to: "/wishlist" },
+      { label: "Cart", to: "/cart" },
     ],
   },
   {
-    title: "Customer Service",
+    icon: Headset,
+    title: "SUPPORT",
     links: [
-      { label: "Help Center",        to: "/help" },
-      { label: "Track Order",        to: "/orders" },
-      { label: "Returns & Refunds",  to: "/help" },
-      { label: "Contact Us",         to: "/contact" },
+      { label: "Help Center", to: "/help" },
+      { label: "Track Order", to: "/orders" },
+      { label: "Contact Us", to: "/contact" },
     ],
   },
   {
-    title: "Company",
+    icon: Building2,
+    title: "COMPANY",
     links: [
-      { label: "About Us",           to: "/about" },
-      { label: "Careers",            to: "/about" },
-      { label: "Press",              to: "/about" },
-      { label: "Blog",               to: "/about" },
+      { label: "About Us", to: "/about" },
+      { label: "Blog", to: "/about" },
     ],
   },
   {
-    title: "Legal",
+    icon: Scale,
+    title: "LEGAL",
     links: [
-      { label: "Privacy Policy",     to: "/privacy" },
-      { label: "Terms of Service",   to: "/terms" },
-      { label: "Cookie Policy",      to: "/privacy" },
+      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Terms of Service", to: "/terms" },
     ],
   },
 ];
 
 export default function SitemapPage() {
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="bg-blue-700 text-white py-12 px-4 text-center">
-        <h1 className="text-3xl font-extrabold mb-2">Sitemap</h1>
-        <p className="text-blue-100 text-sm">All pages on Vantix Kenya</p>
+    <div className="relative min-h-screen text-gray-900 bg-black overflow-hidden">
+
+      {/* 🌐 TECH BACKGROUND LAYER */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-black to-gray-950" />
+
+        {/* grid tech layer */}
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
+            backgroundSize: "30px 30px",
+          }}
+        />
+
+        {/* shopping visuals overlay */}
+        <div className="absolute inset-0 opacity-10 mix-blend-screen">
+          <img
+            src="https://images.unsplash.com/photo-1523275335684-37898b6baf30"
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sections.map(section => (
-            <div key={section.title} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4 pb-2 border-b border-gray-100">
-                {section.title}
-              </h2>
-              <ul className="space-y-2.5">
-                {section.links.map(link => (
-                  <li key={link.label}>
-                    <Link to={link.to} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+      {/* HEADER */}
+      <div className="relative z-10 py-14 text-center">
+
+        <div className="flex items-center justify-center gap-2 text-white">
+          <LayoutGrid className="w-5 h-5" />
+          <h1 className="text-3xl md:text-4xl font-bold tracking-[0.3em] uppercase">
+            SITEMAP
+          </h1>
+        </div>
+
+        <p className="text-[11px] text-indigo-200 mt-2">
+          Navigate everything in Vantix Shop254
+        </p>
+      </div>
+
+      {/* CONTENT */}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-16">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {sections.map((section) => {
+            const Icon = section.icon;
+
+            return (
+              <div
+                key={section.title}
+                className="
+                  relative
+                  backdrop-blur-md
+                  bg-white/5
+                  border border-white/10
+                  rounded-xl
+                  p-5
+                  shadow-[0_10px_30px_rgba(0,0,0,0.4)]
+                  hover:translate-y-[-4px]
+                  transition
+                "
+              >
+
+                {/* 3D glow edge */}
+                <div className="absolute inset-0 rounded-xl border border-indigo-500/10" />
+
+                {/* section header */}
+                <div className="flex items-center gap-2 mb-4 text-white">
+                  <Icon className="w-4 h-4 text-indigo-300" />
+                  <h2 className="text-xs font-bold tracking-widest">
+                    {section.title}
+                  </h2>
+                </div>
+
+                {/* links */}
+                <ul className="space-y-2">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        to={link.to}
+                        className="
+                          flex items-center gap-2
+                          text-sm text-gray-300
+                          hover:text-white
+                          transition
+                        "
+                      >
+                        <ChevronRight className="w-3 h-3 text-indigo-400" />
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
