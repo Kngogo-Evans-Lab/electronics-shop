@@ -29,14 +29,10 @@ export function VantixKenyaLogo({ size = 32 }) {
   );
 }
 
-// Portal dropdown — renders at fixed screen coords to escape overflow:hidden.
-// KEY FIX: exposes its own DOM node via onMount so the parent's click-outside
-// handler can check containment against *both* the anchor and the portal node.
 function DropdownPortal({ anchorRef, open, children, onMount }) {
   const [coords, setCoords] = useState(null);
   const portalRef = useRef(null);
 
-  // Recalculate position every time the dropdown opens
   useEffect(() => {
     if (open && anchorRef.current) {
       const r = anchorRef.current.getBoundingClientRect();
@@ -45,7 +41,6 @@ function DropdownPortal({ anchorRef, open, children, onMount }) {
     if (!open) setCoords(null);
   }, [open]);
 
-  // Notify parent of our DOM node so it can do proper containment checks
   useEffect(() => {
     if (onMount) onMount(portalRef.current);
   });
@@ -84,7 +79,6 @@ export default function Navbar({
   const brandDropRef = useRef(null);
   const priceDropRef = useRef(null);
 
-  // Refs to the *portal* DOM nodes — needed for proper outside-click detection
   const pricePortalRef = useRef(null);
   const brandPortalRef = useRef(null);
 
@@ -100,24 +94,16 @@ export default function Navbar({
 
   useEffect(() => {
     function close(e) {
-      // User menu
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
         setUserMenuOpen(false);
       }
-
-      // Price dropdown — close only if click is outside BOTH the anchor AND the portal
       const inPriceAnchor = priceDropRef.current && priceDropRef.current.contains(e.target);
       const inPricePortal = pricePortalRef.current && pricePortalRef.current.contains(e.target);
-      if (!inPriceAnchor && !inPricePortal) {
-        setPriceDropOpen(false);
-      }
+      if (!inPriceAnchor && !inPricePortal) setPriceDropOpen(false);
 
-      // Brand dropdown — same pattern
       const inBrandAnchor = brandDropRef.current && brandDropRef.current.contains(e.target);
       const inBrandPortal = brandPortalRef.current && brandPortalRef.current.contains(e.target);
-      if (!inBrandAnchor && !inBrandPortal) {
-        setBrandDropOpen(false);
-      }
+      if (!inBrandAnchor && !inBrandPortal) setBrandDropOpen(false);
     }
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -203,6 +189,36 @@ export default function Navbar({
           color:#9ca3af; font-size:18px; line-height:1; padding:0 10px;
         }
 
+        /* ── Mobile category strip ── */
+        .v-mob-cats {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          padding: 5px 10px;
+          background: #fff;
+          border-bottom: 1px solid #f3f4f6;
+        }
+        .v-mob-cats::-webkit-scrollbar { display: none; }
+        @media(min-width:640px) { .v-mob-cats { display: none; } }
+
+        .v-mob-cat {
+          flex-shrink: 0;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 3px 11px;
+          border-radius: 100px;
+          border: 1px solid #e5e7eb;
+          color: #4b5563;
+          background: #fff;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: all .12s;
+        }
+        .v-mob-cat:hover { border-color: #93c5fd; color: #2563eb; }
+        .v-mob-cat.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
         /* ── Combined row: cats + filters + icons ── */
         .v-combined-row {
           display: none;
@@ -218,6 +234,25 @@ export default function Navbar({
             padding: 0;
           }
         }
+
+        /* Home button in combined row — desktop only */
+        .v-home-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 0 12px;
+          height: 100%;
+          font-size: 12px;
+          font-weight: 700;
+          color: #2563eb;
+          text-decoration: none;
+          flex-shrink: 0;
+          border-right: 1px solid #f3f4f6;
+          transition: background .12s;
+          white-space: nowrap;
+        }
+        .v-home-btn:hover { background: #eff6ff; }
+        .v-home-btn i { font-size: 15px; }
 
         /* scrollable cats section */
         .v-cats-scroll {
@@ -288,7 +323,6 @@ export default function Navbar({
           box-shadow:0 12px 32px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.06);
           padding:16px;
           min-width:230px;
-          /* prevent the panel itself from swallowing pointer events that close it */
           pointer-events: all;
         }
         .v-drop-lbl {
@@ -302,7 +336,6 @@ export default function Navbar({
           border:1.5px solid #e5e7eb; border-radius:8px; padding:7px 10px;
           font-size:13px; color:#374151; outline:none; width:100%;
           transition: border-color .15s, box-shadow .15s;
-          /* CRITICAL: prevent any parent from stealing focus */
           -webkit-appearance: none;
         }
         .v-price-in:focus {
@@ -486,9 +519,31 @@ export default function Navbar({
           </form>
         </div>
 
+        {/* ── Mobile category strip — below search, mobile only, non-homepage ── */}
+        {!isHomepage && (
+          <div className="v-mob-cats">
+            {CATEGORIES.map(cat => (
+              <Link
+                key={cat}
+                to={`/products?category=${cat}`}
+                onClick={() => dispatch({ type: "SET_FILTER", filter: { category: cat } })}
+                className={`v-mob-cat${filters.category === cat ? " active" : ""}`}
+              >
+                {cat === "all" ? "All" : cat}
+              </Link>
+            ))}
+          </div>
+        )}
+
         {/* ── Combined row ── desktop only, hidden on homepage */}
         {!isHomepage && (
           <div className="v-combined-row" style={{ maxWidth: "100%", margin: "0 auto" }}>
+
+            {/* Home button — desktop only */}
+            <Link to="/" className="v-home-btn">
+              <i className="ti ti-home" />
+              Home
+            </Link>
 
             {/* Scrollable category pills */}
             <div className="v-cats-scroll">
