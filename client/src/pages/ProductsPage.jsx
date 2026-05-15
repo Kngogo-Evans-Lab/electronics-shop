@@ -6,14 +6,89 @@ import { useApp } from "../context/AppContext";
 import { products, CATEGORIES, BRANDS } from "../data/products";
 import ProductCard, { toKsh, USD_TO_KSH } from "../components/ProductCard";
 
+const PAGE_CSS = `
+  .products-page-wrap {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: #f1f5f9;
+    /* mobile: promobar 28 + nav 58 + bottom tabs ~56 */
+    padding-top: 90px;
+    padding-bottom: 72px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+  @media (min-width: 640px) {
+    .products-page-wrap {
+      /* desktop: promobar 28 + nav 58 */
+      padding-top: 94px;
+      padding-bottom: 24px;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+  }
+
+  /* ── Dense product grid ── */
+  .pp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    width: 100%;
+  }
+  @media (min-width: 480px)  { .pp-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; } }
+  @media (min-width: 640px)  { .pp-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; } }
+  @media (min-width: 860px)  { .pp-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; } }
+  @media (min-width: 1100px) { .pp-grid { grid-template-columns: repeat(6, 1fr); gap: 6px; } }
+  @media (min-width: 1350px) { .pp-grid { grid-template-columns: repeat(7, 1fr); gap: 7px; } }
+  @media (min-width: 1600px) { .pp-grid { grid-template-columns: repeat(8, 1fr); gap: 8px; } }
+
+  /* ── List view ── */
+  .pp-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .pp-list-card {
+    background: #fff;
+    border-radius: 0;
+    display: flex;
+    overflow: hidden;
+    transition: background 0.12s;
+  }
+  .pp-list-card:hover { background: #f8faff; }
+
+  /* ── Filter drawer ── */
+  .pp-filter-drawer {
+    position: fixed; inset: 0; z-index: 50;
+  }
+  .pp-filter-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+  }
+  .pp-filter-panel {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 280px; background: #fff;
+    overflow-y: auto; padding: 16px;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+  }
+
+  /* ── Empty state ── */
+  .pp-empty {
+    grid-column: 1 / -1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 64px 24px; text-align: center;
+    background: #fff;
+  }
+
+  /* ── Watermark ── */
+  .pp-watermark {
+    position: absolute; inset: 0;
+    pointer-events: none; user-select: none;
+    overflow: hidden; z-index: 0;
+  }
+`;
+
 // ── Watermark ─────────────────────────────────────────────────────────────────
 function Watermark() {
   return (
-    <div aria-hidden="true" style={{
-      position: "absolute", inset: 0,
-      pointerEvents: "none", userSelect: "none",
-      overflow: "hidden", zIndex: 0,
-    }}>
+    <div aria-hidden="true" className="pp-watermark">
       {Array.from({ length: 15 }).map((_, i) => (
         <div key={i} style={{
           position: "absolute",
@@ -21,7 +96,7 @@ function Watermark() {
           top:  `${(i * 17) % 90}%`,
           transform: `rotate(${-25 + (i * 11) % 50}deg)`,
           fontSize: 32 + (i % 3) * 8,
-          fontWeight: 900, color: "#1d4ed8", opacity: 0.025,
+          fontWeight: 900, color: "#1d4ed8", opacity: 0.022,
           whiteSpace: "nowrap", lineHeight: 1,
         }}>VANTIX KENYA</div>
       ))}
@@ -36,36 +111,36 @@ function ListCard({ product }) {
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
   return (
-    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-all flex">
-      <Link to={`/product/${product.id}`} className="relative shrink-0">
+    <div className="pp-list-card">
+      <Link to={`/product/${product.id}`} style={{ position:"relative", flexShrink:0 }}>
         <img src={product.image} alt={product.title} loading="lazy"
-          className="w-28 sm:w-36 h-full object-cover" style={{ minHeight: 100 }} />
+          style={{ width:110, height:110, objectFit:"cover", display:"block" }} />
         {discount > 0 && (
-          <span className="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+          <span style={{ position:"absolute", top:4, left:4, background:"#ef4444", color:"#fff", fontSize:9, fontWeight:800, padding:"1px 5px", borderRadius:4 }}>
             -{discount}%
           </span>
         )}
       </Link>
-      <div className="p-3 flex flex-col flex-1 min-w-0">
-        <p className="text-[10px] text-blue-600 font-bold uppercase mb-0.5">{product.brand}</p>
+      <div style={{ padding:"10px 12px", display:"flex", flexDirection:"column", flex:1, minWidth:0 }}>
+        <p style={{ fontSize:10, color:"#2563eb", fontWeight:800, textTransform:"uppercase", marginBottom:2 }}>{product.brand}</p>
         <Link to={`/product/${product.id}`}
-          className="text-sm font-medium text-gray-800 hover:text-blue-600 line-clamp-2 leading-snug flex-1 mb-2">
+          style={{ fontSize:13, fontWeight:600, color:"#111827", textDecoration:"none", flex:1, marginBottom:8, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
           {product.title}
         </Link>
-        <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
           <div>
-            <p className="text-sm font-bold text-gray-900">{toKsh(product.price)}</p>
+            <p style={{ fontSize:13, fontWeight:800, color:"#111827", margin:0 }}>{toKsh(product.price)}</p>
             {product.originalPrice && (
-              <p className="text-xs text-gray-400 line-through">{toKsh(product.originalPrice)}</p>
+              <p style={{ fontSize:11, color:"#9ca3af", textDecoration:"line-through", margin:0 }}>{toKsh(product.originalPrice)}</p>
             )}
           </div>
-          <div className="flex gap-1.5">
+          <div style={{ display:"flex", gap:5 }}>
             <button onClick={() => addToCart(product)}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">
+              style={{ background:"#2563eb", color:"#fff", fontSize:11, fontWeight:700, padding:"5px 10px", borderRadius:7, border:"none", cursor:"pointer" }}>
               Add to Cart
             </button>
             <button onClick={() => { addToCart(product); navigate("/checkout"); }}
-              className="bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">
+              style={{ background:"#111827", color:"#fff", fontSize:11, fontWeight:700, padding:"5px 10px", borderRadius:7, border:"none", cursor:"pointer" }}>
               Buy Now
             </button>
           </div>
@@ -144,146 +219,102 @@ export default function ProductsPage({
 
   return (
     <>
-      {/*
-        ─── NAVBAR HEIGHT REFERENCE ───────────────────────────────────────────
-        Mobile  (~< 640px):
-          marquee  ~24px
-          search   ~48px
-          cats     ~38px
-          tabbar   ~56px (fixed bottom — no top offset needed)
-          TOTAL TOP ≈ 110px  → use paddingTop: 118px
-
-        Desktop (≥ 640px):
-          marquee     ~24px
-          search      ~48px
-          icon row    ~40px
-          cats+filter ~70px  (cats ~38px + filter bar ~32px when shown)
-          TOTAL TOP ≈ 182px → use paddingTop: 190px
-
-        Add an extra 8px buffer so the first product card is never kissing the bar.
-        ───────────────────────────────────────────────────────────────────────
-      */}
-      <style>{`
-        .products-page-wrap {
-          box-sizing: border-box;
-          width: 100%;
-          overflow-x: hidden;
-          /* mobile: navbar ≈ 110px + 8px buffer + 56px bottom tab */
-          padding-top: 118px;
-          padding-bottom: 72px;
-          padding-left: 12px;
-          padding-right: 12px;
-        }
-        @media (min-width: 640px) {
-          .products-page-wrap {
-            /* desktop: navbar ≈ 182px + 8px buffer, no bottom tabbar */
-            padding-top: 190px;
-            padding-bottom: 40px;
-            padding-left: 24px;
-            padding-right: 24px;
-          }
-        }
-        @media (min-width: 1024px) {
-          .products-page-wrap {
-            padding-left: 32px;
-            padding-right: 32px;
-          }
-        }
-      `}</style>
+      <style>{PAGE_CSS}</style>
 
       <div className="products-page-wrap">
+
         {/* Mobile filter drawer */}
         {mobileFilterOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setMobileFilterOpen(false)} />
-            <div className="absolute left-0 top-0 bottom-0 w-72 bg-white p-4 overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-gray-900">Filters</h2>
-                <button onClick={() => setMobileFilterOpen(false)}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+          <div className="pp-filter-drawer">
+            <div className="pp-filter-overlay" onClick={() => setMobileFilterOpen(false)} />
+            <div className="pp-filter-panel">
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+                <h2 style={{ fontWeight:800, fontSize:15, color:"#111827", margin:0 }}>Filters</h2>
+                <button onClick={() => setMobileFilterOpen(false)}
+                  style={{ background:"none", border:"none", cursor:"pointer", padding:4 }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ width:20, height:20 }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              <div className="mb-5">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Price range (KES)</p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number" min="0" placeholder="Min"
+              <div style={{ marginBottom:20 }}>
+                <p style={{ fontSize:10, fontWeight:800, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Price range (KES)</p>
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <input type="number" min="0" placeholder="Min"
                     value={mobileMinInput}
                     onChange={e => setMobileMinInput(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    style={{ flex:1, border:"1.5px solid #e5e7eb", borderRadius:8, padding:"8px 10px", fontSize:13, outline:"none" }}
                   />
-                  <span className="text-gray-400 text-sm shrink-0">–</span>
-                  <input
-                    type="number" min="0" placeholder="Max"
+                  <span style={{ color:"#9ca3af", fontSize:13 }}>–</span>
+                  <input type="number" min="0" placeholder="Max"
                     value={mobileMaxInput}
                     onChange={e => setMobileMaxInput(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    style={{ flex:1, border:"1.5px solid #e5e7eb", borderRadius:8, padding:"8px 10px", fontSize:13, outline:"none" }}
                   />
                 </div>
                 <button onClick={applyMobilePrice}
-                  className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-lg transition">
+                  style={{ marginTop:8, width:"100%", background:"#2563eb", color:"#fff", fontSize:13, fontWeight:700, padding:"9px 0", borderRadius:8, border:"none", cursor:"pointer" }}>
                   Apply
                 </button>
                 {(priceMin > 0 || priceMax !== Infinity) && (
-                  <button
-                    onClick={() => { setPriceMin(0); setPriceMax(Infinity); setMobileMinInput(""); setMobileMaxInput(""); }}
-                    className="mt-1.5 w-full border border-gray-200 text-gray-500 text-xs py-1.5 rounded-lg hover:border-red-300 hover:text-red-500 transition">
+                  <button onClick={() => { setPriceMin(0); setPriceMax(Infinity); setMobileMinInput(""); setMobileMaxInput(""); }}
+                    style={{ marginTop:6, width:"100%", border:"1.5px solid #e5e7eb", background:"none", color:"#6b7280", fontSize:12, padding:"7px 0", borderRadius:8, cursor:"pointer" }}>
                     Clear price filter
                   </button>
                 )}
               </div>
 
-              <div className="mb-5">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Brand</p>
-                <div className="space-y-2">
+              <div style={{ marginBottom:20 }}>
+                <p style={{ fontSize:10, fontWeight:800, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Brand</p>
+                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {BRANDS.map(brand => (
-                    <label key={brand} className="flex items-center gap-2 cursor-pointer">
+                    <label key={brand} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
                       <input type="checkbox"
                         checked={selectedBrands.includes(brand)}
                         onChange={() => setSelectedBrands(prev =>
                           prev.includes(brand) ? prev.filter(x => x !== brand) : [...prev, brand]
                         )}
-                        className="w-4 h-4 text-blue-600 rounded border-gray-300" />
-                      <span className="text-sm text-gray-700">{brand}</span>
+                        style={{ width:15, height:15 }}
+                      />
+                      <span style={{ fontSize:13, color:"#374151" }}>{brand}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               <button onClick={() => { handleResetAll(); setMobileFilterOpen(false); }}
-                className="w-full border border-gray-300 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">
+                style={{ width:"100%", border:"1.5px solid #d1d5db", background:"none", color:"#4b5563", fontSize:13, padding:"9px 0", borderRadius:8, cursor:"pointer" }}>
                 Reset All
               </button>
             </div>
           </div>
         )}
 
-        {/* Products grid */}
-        <div className="relative">
+        {/* Products — completely frameless, edge to edge */}
+        <div style={{ position:"relative" }}>
           <Watermark />
           {filtered.length === 0 ? (
-            <div className="relative z-10 bg-white rounded-xl p-12 text-center">
-              <div className="text-5xl mb-4">🔍</div>
-              <h3 className="font-bold text-gray-800 text-lg mb-2">No products found</h3>
-              <p className="text-gray-500 mb-4">Try adjusting your search or filters</p>
+            <div className="pp-empty">
+              <div style={{ fontSize:52, marginBottom:12 }}>🔍</div>
+              <h3 style={{ fontWeight:800, color:"#1f2937", fontSize:17, marginBottom:6 }}>No products found</h3>
+              <p style={{ color:"#6b7280", marginBottom:16, fontSize:13 }}>Try adjusting your search or filters</p>
               <button onClick={handleResetAll}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+                style={{ background:"#2563eb", color:"#fff", padding:"9px 24px", borderRadius:9, fontSize:13, fontWeight:700, border:"none", cursor:"pointer" }}>
                 Clear Filters
               </button>
             </div>
           ) : viewMode === "grid" ? (
-            <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
+            <div className="pp-grid" style={{ position:"relative", zIndex:1 }}>
               {filtered.map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           ) : (
-            <div className="relative z-10 flex flex-col gap-3">
+            <div className="pp-list" style={{ position:"relative", zIndex:1 }}>
               {filtered.map(p => <ListCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
+
       </div>
     </>
   );

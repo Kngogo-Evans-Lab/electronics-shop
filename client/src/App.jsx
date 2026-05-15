@@ -1,6 +1,6 @@
 // FILE: src/App.jsx
 
-import { lazy, Suspense, useState, useMemo } from 'react'
+import { lazy, Suspense, useState, useMemo, useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AppProvider, useApp } from './context/AppContext'
 import Navbar from './components/Navbar'
@@ -9,23 +9,24 @@ import ToastContainer from './components/ui/ToastContainer'
 import { BRANDS, products } from './data/products'
 import { USD_TO_KSH } from './components/ProductCard'
 
-const HomePage      = lazy(() => import('./pages/HomePage'))
-const ProductsPage  = lazy(() => import('./pages/ProductsPage'))
-const ProductDetail = lazy(() => import('./pages/ProductDetailPage'))
-const CartPage      = lazy(() => import('./pages/CartPage'))
-const AuthPage      = lazy(() => import('./pages/AuthPage'))
-const CheckoutPage  = lazy(() => import('./pages/CheckoutPage'))
-const WishlistPage  = lazy(() => import('./pages/WishlistPage'))
-const OrdersPage    = lazy(() => import('./pages/OrderPage'))
-const AccountPage   = lazy(() => import('./pages/AccountPage'))
-const OrderSuccess  = lazy(() => import('./pages/OrderSuccessPage'))
-const AboutPage     = lazy(() => import('./pages/AboutPage'))
-const HelpPage      = lazy(() => import('./pages/HelpPage'))
-const ContactPage   = lazy(() => import('./pages/ContactPage'))
-const PrivacyPage   = lazy(() => import('./pages/PrivacyPage'))
-const TermsPage     = lazy(() => import('./pages/TermsPage'))
-const SitemapPage   = lazy(() => import('./pages/SitemapPage'))
-const ReturnsPage   = lazy(() => import('./pages/ReturnsPage'))
+const HomePage          = lazy(() => import('./pages/HomePage'))
+const ProductsPage      = lazy(() => import('./pages/ProductsPage'))
+const ProductDetail     = lazy(() => import('./pages/ProductDetailPage'))
+const CartPage          = lazy(() => import('./pages/CartPage'))
+const AuthPage          = lazy(() => import('./pages/AuthPage'))
+const CheckoutPage      = lazy(() => import('./pages/CheckoutPage'))
+const WishlistPage      = lazy(() => import('./pages/WishlistPage'))
+const OrdersPage        = lazy(() => import('./pages/OrderPage'))
+const AccountPage       = lazy(() => import('./pages/AccountPage'))
+const OrderSuccess      = lazy(() => import('./pages/OrderSuccessPage'))
+const AboutPage         = lazy(() => import('./pages/AboutPage'))
+const HelpPage          = lazy(() => import('./pages/HelpPage'))
+const ContactPage       = lazy(() => import('./pages/ContactPage'))
+const PrivacyPage       = lazy(() => import('./pages/PrivacyPage'))
+const TermsPage         = lazy(() => import('./pages/TermsPage'))
+const SitemapPage       = lazy(() => import('./pages/SitemapPage'))
+const ReturnsPage       = lazy(() => import('./pages/ReturnsPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 
 const SORT_OPTIONS = [
   { value: "default",    label: "Featured" },
@@ -76,11 +77,21 @@ function AppShell() {
   const { filters, dispatch } = useApp()
   const isProductsPage = location.pathname === '/products'
 
-  const [viewMode, setViewMode]           = useState("grid")
+  const [navHeight, setNavHeight]           = useState(96)
+  const [viewMode, setViewMode]             = useState("grid")
   const [selectedBrands, setSelectedBrands] = useState([])
-  const [priceMin, setPriceMin]           = useState(0)
-  const [priceMax, setPriceMax]           = useState(Infinity)
+  const [priceMin, setPriceMin]             = useState(0)
+  const [priceMax, setPriceMax]             = useState(Infinity)
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
+
+  useEffect(() => {
+    const header = document.querySelector('header')
+    if (!header) return
+    const ro = new ResizeObserver(() => setNavHeight(header.offsetHeight))
+    ro.observe(header)
+    setNavHeight(header.offsetHeight)
+    return () => ro.disconnect()
+  }, [])
 
   const resetAll = () => {
     dispatch({ type: "RESET_FILTERS" })
@@ -89,7 +100,6 @@ function AppShell() {
     setPriceMax(Infinity)
   }
 
-  // FIX: compute filteredCount here so Navbar can display it
   const filteredCount = useMemo(() => {
     if (!isProductsPage) return 0
     let result = [...products]
@@ -101,7 +111,6 @@ function AppShell() {
     return result.length
   }, [isProductsPage, filters.category, selectedBrands, priceMin, priceMax])
 
-  // FIX: toggle brand properly
   const handleToggleBrand = (brand) => {
     setSelectedBrands(prev =>
       prev.includes(brand) ? prev.filter(x => x !== brand) : [...prev, brand]
@@ -127,13 +136,11 @@ function AppShell() {
         onOpenMobileFilters={() => setMobileFilterOpen(true)}
       />
 
-      <main className="flex-1">
+      <main className="flex-1" style={{ paddingTop: navHeight }}>
         <Suspense fallback={<Loader />}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route
-              path="/products"
-              element={
+            <Route path="/"               element={<HomePage />} />
+            <Route path="/products"       element={
                 <ProductsPage
                   viewMode={viewMode}
                   setViewMode={setViewMode}
@@ -149,22 +156,24 @@ function AppShell() {
                 />
               }
             />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/returns" element={<ReturnsPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/sitemap" element={<SitemapPage />} />
-            <Route path="/checkout" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
-            <Route path="/wishlist" element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
-            <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
-            <Route path="/account" element={<PrivateRoute><AccountPage /></PrivateRoute>} />
-            <Route path="/order-success" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
-            <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/product/:id"    element={<ProductDetail />} />
+            <Route path="/cart"           element={<CartPage />} />
+            <Route path="/about"          element={<AboutPage />} />
+            <Route path="/help"           element={<HelpPage />} />
+            <Route path="/returns"        element={<ReturnsPage />} />
+            <Route path="/contact"        element={<ContactPage />} />
+            <Route path="/privacy"        element={<PrivacyPage />} />
+            <Route path="/terms"          element={<TermsPage />} />
+            <Route path="/sitemap"        element={<SitemapPage />} />
+            <Route path="/checkout"       element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
+            <Route path="/wishlist"       element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
+            <Route path="/orders"         element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
+            <Route path="/account"        element={<PrivateRoute><AccountPage /></PrivateRoute>} />
+            <Route path="/order-success"  element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
+            <Route path="/auth"           element={<AuthRoute><AuthPage /></AuthRoute>} />
+            <Route path="/forgot-password" element={<ResetPasswordPage />} />
+            <Route path="/reset-password"  element={<ResetPasswordPage />} />
+            <Route path="*"               element={<NotFound />} />
           </Routes>
         </Suspense>
       </main>
